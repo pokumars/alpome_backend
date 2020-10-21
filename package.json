@@ -4,7 +4,8 @@
   "description": "backend for alpome plant monitoring app",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "watch": "nodemon index.js"
   },
   "author": "Oheneba Poku-Marboah",
   "license": "ISC",
