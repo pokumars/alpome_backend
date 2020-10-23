@@ -1,3 +1,10 @@
+const createRandomNum= (min , max) =>{
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  const rndNum = Math.floor(Math.random() * (max-min)) + min;
+  return rndNum;
+};
+
 let persons = [
   {
     'id': 1,
@@ -37,4 +44,4 @@ let persons = [
   }
 ];
 
-module.exports = {persons};
+module.exports = { createRandomNum, persons };

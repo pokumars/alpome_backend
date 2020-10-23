@@ -1,10 +1,15 @@
-const usersRouter = require('express').Router();
+//Get back to controllers
 
-usersRouter.get('/api/users', (request, response, next) => {
+const usersRouter = require('express').Router();
+const persons = require('../scratchpad').persons;
+
+usersRouter.get('/api/users', (request, response) => {
+  console.log('GET /api/users')
   response.send(persons);
 });
 
-usersRouter.get('/api/users/:id', (request, response, next) => {
+usersRouter.get('/api/users/:id', (request, response) => {
+  console.log('GET /api/users/:id');
   const id = request.params.id;
   console.log(id);
   const user = persons.find(user => Number(user.id) === Number(id));
@@ -14,3 +19,9 @@ usersRouter.get('/api/users/:id', (request, response, next) => {
     response.status(400);
   }
 });
+/*
+usersRouter.delete('/api/users/:id',(request, response) => {
+  const
+})
+*/
+module.exports = usersRouter;
