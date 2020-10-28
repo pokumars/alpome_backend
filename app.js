@@ -2,11 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const usersRouter = require('./controllers/users');
-const logger = require('./utils/logger');
 const currentLocalDateTime = require('./utils/helperFunctions').currentLocalDateTime;
-
-let persons = require('./scratchpad').persons;
-const genRandom = require('./scratchpad').createRandomNum;
 
 const app = express();
 app.use(express.json());
@@ -26,7 +22,7 @@ app.use(morgan((tokens, req, res) => {
 }));
 
 //const persons = require('./scratchpad').persons;
-app.get('/api', (request, response) => {
+app.get('/', (request, response) => {
   //TODO: change this when you have real data
   response.send(`
   <p>This is probably not what you are looking for. Try</p> 
@@ -34,6 +30,7 @@ app.get('/api', (request, response) => {
   <a href="/api/users/2">/api/users/2</a>
   `);
 });
+
 
 
 

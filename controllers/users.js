@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 const genRandom = require('../scratchpad').createRandomNum;
 let persons = require('../scratchpad').persons;
 
-// endpoint
+// endpoint /
 usersRouter.get('/', (request, response) => {
   console.log('GET /api/users');
   response.send(persons);
@@ -24,7 +24,7 @@ usersRouter.get('/api/users/:id', (request, response) => {
   }
 });
 
-// endpoint
+// endpoint /api/users/:id
 usersRouter.delete('/api/users/:id',(request, response) => {
   const id = request.params.id;
   try {
@@ -36,7 +36,7 @@ usersRouter.delete('/api/users/:id',(request, response) => {
   }
 });
 
-// endpoint
+// endpoint /api/users
 usersRouter.post('/api/users', (request, response) => {
   const body = request.body;
   if(!body.name, !body.username, !body.email) {
