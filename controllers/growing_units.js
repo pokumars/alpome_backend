@@ -18,22 +18,33 @@ growingUnitsRouter.get('/', async (request, response, next) => {
 });
 
 // endpoint /api/users/:id
-growingUnitsRouter.get('/api/growing_unit/:id', (request, response) => {
+growingUnitsRouter.get('/:id', async (request, response, next) => {
   console.log('GET /api/growing_unit/:id');
-  const id = request.params.id;
-  console.log(id);
-  const user = persons.find(user => Number(user.id) === Number(id));
-  if (user) {
-    response.send(user);
-  } else {
-    response.status(400).json({
-      error: 'user does not exist'
-    });
+
+  console.log(request.params.id);
+  //const user = persons.find(user => Number(user.id) === Number(id));
+  try {
+    const growingUnit = await GrowingUnit
+      .findById(request.params.id);
+
+    if (growingUnit) {
+      response.json(growingUnit);
+    } else {
+      response.status(404).json({
+        error: 'growingUnit does not exist'
+      });
+      next();
+    }
+  } catch (error) {
+    next(error);
+    response.status(404).end();
   }
+  
+
 });
 
 // endpoint /api/users/:id
-growingUnitsRouter.delete('/api/growing_unit/:id',(request, response) => {
+growingUnitsRouter.delete('/:id',(request, response) => {
   const id = request.params.id;
   try {
     persons = persons.filter(obj => Number(obj.id) !== Number(id));
