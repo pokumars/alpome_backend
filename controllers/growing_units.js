@@ -17,12 +17,9 @@ growingUnitsRouter.get('/', async (request, response, next) => {
   }
 });
 
-// endpoint /api/users/:id
+//get single growing unit by id
 growingUnitsRouter.get('/:id', async (request, response, next) => {
-  console.log('GET /api/growing_unit/:id');
 
-  console.log(request.params.id);
-  //const user = persons.find(user => Number(user.id) === Number(id));
   try {
     const growingUnit = await GrowingUnit
       .findById(request.params.id);
@@ -39,24 +36,64 @@ growingUnitsRouter.get('/:id', async (request, response, next) => {
     next(error);
     response.status(404).end();
   }
-  
-
 });
 
 // endpoint /api/users/:id
-growingUnitsRouter.delete('/:id',(request, response) => {
-  const id = request.params.id;
+growingUnitsRouter.delete('/:id',async (request, response, next) => {
   try {
-    persons = persons.filter(obj => Number(obj.id) !== Number(id));
-    //logger.info(`length of persons is now ${persons.length}`);
-    response.send(`length of persons is now ${persons.length}`);
+    /*Don't just delete because you got a request to delete. Some checks need to be
+    done. The user submitting the delete request has to for example be the owner of
+   the growing unit before they can delete a unit. They have to be logged in and 
+    have a user token that says they are logged in etc. */
+    
+    //TODO: add user token mechanism
+    //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.
+    
+    const unitToDelete = await GrowingUnit
+      .findByIdAndDelete(request.params.id);
+    if(unitToDelete) {
+      response.status(204);
+    } else {
+      response.status(204).json({
+        error: 'growingUnit does not exist'
+      });
+    }
+
   } catch (error) {
     logger.error(error);
+    next(error);
   }
 });
 
 // endpoint /api/users
-growingUnitsRouter.post('/api/growing_unit', (request, response) => {
+growingUnitsRouter.put('/:id', async (request, response, next) => {
+  /*Don't just update because you got a request to update. Some checks need to be
+    done. The user submitting the update request has to for example be the owner of
+   the growing unit before they can update a unit. They have to be logged in and 
+    have a user token that says they are logged in etc. */
+
+  try {
+    const replacement = request.body;
+    const updatedUnit = await GrowingUnit
+      .findByIdAndUpdate(request.params.id, replacement, { new: true });
+
+    if (updatedUnit) {
+      console.log(updatedUnit);
+      response.json(updatedUnit);
+    } else {
+      logger.error('some error updating growing unit of id ', request.paramsms.id);
+      response.json({
+        error: 'Could not find unit to update'
+      });
+    }
+  } catch (error) {
+    next(error);
+    response.status(400);
+  }
+});
+
+// endpoint /api/users
+growingUnitsRouter.post('/', (request, response, next) => {
   const body = request.body;
   if(!body.name, !body.username, !body.email) {
     response.status(400).json({

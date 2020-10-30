@@ -147,7 +147,8 @@
     <td>/api/growing_unit/:id</td>
     <td>update a growing unit TODO : not added yet</td>
     <td>TODO : the new object - it will return the object with the applied updates</td>
-    <td>urlParam id of type int</td>
+    <td>urlParam id of type int <br>
+    You also need to pass the updated growing unit as the request body. or at least the fields to update</td>
   </tr>
   
 </table>
