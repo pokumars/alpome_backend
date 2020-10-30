@@ -5,13 +5,12 @@ const GrowingUnit = require('../models/growing_units');
 
 // endpoint /
 growingUnitsRouter.get('/', async (request, response, next) => {
-  console.log('GET /api/growing_unit');
 
   try {
     const gUnits = await GrowingUnit
       .find({});
 
-    response.send(gUnits)
+    response.json(gUnits);
     //.populate('user');
   }catch(exception){
     next(exception);

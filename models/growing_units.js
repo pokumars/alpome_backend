@@ -32,4 +32,5 @@ growingUnitSchema.set('toJSON', {
 
 
 //https://mongoosejs.com/docs/models.html
-module.exports = mongoose.model('Growing Unit', growingUnitSchema);
+const growingUnit= mongoose.model('GrowingUnit', growingUnitSchema);
+module.exports = growingUnit;

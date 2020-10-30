@@ -4,17 +4,14 @@ const cors = require('cors');
 const usersRouter = require('./controllers/users');
 const growingUnitsRouter = require('./controllers/growing_units');
 const logger = require('./utils/logger');
+const config = require('./utils/config');
+const mongoose = require('mongoose');
 const currentLocalDateTime = require('./utils/helperFunctions').currentLocalDateTime;
 
 const app = express();
 
-
-
 app.use(express.json());
 app.use(cors());
-app.use('/api/users', usersRouter);
-app.use('/api/growing_unit', growingUnitsRouter);
-
 //morgan logs any incoming request. The array below is  how we want it to log the details
 app.use(morgan((tokens, req, res) => {
   return[
@@ -27,6 +24,19 @@ app.use(morgan((tokens, req, res) => {
   ].join(' ');
 }));
 
+const dbUri = config.MONGO_DB_TRIAL_URI;
+logger.info('connecting to MongoDB');
+
+mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    logger.info('connected to MongoDB');
+  })
+  .catch((error) => {
+    logger.error('error connecting to MongoDB:', error.message);
+  });
+
+app.use('/api/users', usersRouter);
+app.use('/api/growing_unit', growingUnitsRouter);
 
 app.get('/', (request, response) => {
   //TODO: change this when you have real 404 page
