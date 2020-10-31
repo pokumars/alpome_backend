@@ -1,5 +1,6 @@
 const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
+const { multerUploadOptions, S3, uploadParams } = require('../utils/imageHandler');
 const GrowingUnit = require('../models/growing_units');
 
 //get all growing units
@@ -18,7 +19,6 @@ growingUnitsRouter.get('/', async (request, response, next) => {
 
 //get single growing unit by id
 growingUnitsRouter.get('/:id', async (request, response, next) => {
-
   try {
     const growingUnit = await GrowingUnit
       .findById(request.params.id);
@@ -72,14 +72,14 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
    the growing unit before they can update a unit. They have to be logged in and 
     have a user token that says they are logged in etc. */
   const unitId = request.params.id;
-    //there is an Image, then it should be uploaded and added to the object
+  //there is an Image, then it should be uploaded and added to the object
   if (request.file){//TODO
-  console.log('There is an image file ',request.file);
-  //upload image
+    console.log('There is an image file ',request.file);
+    //upload image
 
-  //get image details
+    //get image details
 
-  /*create image object like this
+    /*create image object like this
     {
         "fileName": "example.png",
         "image_url": "https://ohe-test-image-upload-1.s3.eu-central-1.amazonaws.com/ad0fe675-905e-4881-8a88-5125be7b11ee.png",
@@ -96,7 +96,7 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
   };
   growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;*/
   }
-  
+
   try {
     const replacement = request.body;
     const updatedUnit = await GrowingUnit
@@ -118,7 +118,7 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
 });
 
 // /api/growing_unit
-growingUnitsRouter.post('/', async (request, response, next) => {
+growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
   const body = request.body;
   console.log('POST an object /api/growing_unit', body);
 
@@ -132,11 +132,10 @@ growingUnitsRouter.post('/', async (request, response, next) => {
     });
   }
 
-  //if there is no image, then the upload is straightforward. If there is an imagethen
-  try {
+  
+  try {//if else clause comes in for image or no image upload 
     
-
-    //TODO: owner should be rquired. If no owner object should fail.
+    //TODO: owner should be required. If no owner object should fail.
     //TODO add or find out about --> "plants": [id_from_trefle: integer],//takes one plant if supragarden is false
     const growingUnitTemporaryObject = {
       nickname: body.nickname,
@@ -145,7 +144,7 @@ growingUnitsRouter.post('/', async (request, response, next) => {
       last_watered: null, //null if supragarden,
       watering_frequency: body.watering_frequency || null,
       data_source: body.data_source || null,
-      common_names: [...body.common_names],
+      common_names: typeof(body.common_names) === 'string' ? [body.common_names] : [...body.common_names],
       owner: '',
       shared_access: [],
       stream_url: body.url,
@@ -155,37 +154,56 @@ growingUnitsRouter.post('/', async (request, response, next) => {
     //there is an Image, then it should be uploaded and added to the object
     if (request.file){//TODO
       console.log('There is an image file ',request.file);
+
       //upload image
-
-      //get image details
-
-      /*create image object like this
-       {
-            "fileName": "example.png",
-            "image_url": "https://ohe-test-image-upload-1.s3.eu-central-1.amazonaws.com/ad0fe675-905e-4881-8a88-5125be7b11ee.png",
-            "date_uploaded": "2020-10-30T07:15:20.288Z"
+      S3.upload(uploadParams(request), (error, data) => {
+        if(error){
+          logger.error(error);
+          response.status(500).send(error);
+          return error;
         }
-        and append to growingUnit before adding to db
-      */
 
+        /*When successful the response returned by S3 aka 'data' is
+        { ETag: '"13d18b81cc70cd3bea6b7ea60e504373"',
+          Location:'https://[BucketName].s3.amazonaws.com/[objectName.filetype]',
+          key: 'example.png',
+          Key: 'example.png',
+          Bucket: '[BucketName]' 
+        }*/
 
-      /*const imageToAddToGrowingUnitObject = {
-        'fileName': s3response.key,
-        'image_url': s3response.Location,
-        'date_uploaded': Date.now()
-      };
-      growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;*/
+        //get saved image details and create image object
+        const imageToAddToGrowingUnitObject = {
+          'fileName': data.key,
+          'image_url': data.Location,
+          'date_uploaded': Date.now()
+        };
 
+        console.log('imageToAddToGrowingUnitObject ', imageToAddToGrowingUnitObject);
+
+        //add image object to gull growing unit object
+        growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;
+        console.log('growingUnitTemporaryObject ', growingUnitTemporaryObject);
+
+        //uploadedGrowingUnit is the object mongodb returns to us after it confirms having received it.
+        const uploadedGrowingUnit = new GrowingUnit(growingUnitTemporaryObject);
+        uploadedGrowingUnit.save()
+          .then(savedGrowingUnit => savedGrowingUnit.toJSON())
+          .then(savedAndFormattedGrUnit => {
+            response.status(200).json(savedAndFormattedGrUnit);
+          })
+          .catch(error => next(error));
+      });
+    } else {
+      console.log('--------------There is no image file ---------------');
+      const uploadedGrowingUnit = new GrowingUnit(growingUnitTemporaryObject);
+      uploadedGrowingUnit.save()
+        .then(savedGrowingUnit => savedGrowingUnit.toJSON())
+        .then(savedAndFormattedGrUnit => {
+          response.status(200).json(savedAndFormattedGrUnit);
+        })
+        .catch(error => next(error));
     }
 
-    //uploadedGrowingUnit is the object mongodb returns to us after it confirms having received it.
-    const uploadedGrowingUnit = new GrowingUnit(growingUnitTemporaryObject);
-    uploadedGrowingUnit.save()
-      .then(savedGrowingUnit => savedGrowingUnit.toJSON())
-      .then(savedAndFormattedGrUnit => {
-        response.status(200).json(savedAndFormattedGrUnit);
-      })
-      .catch(error => next(error));
   } catch (error) {
     next(error);
     response.status(400).json({  
