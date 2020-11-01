@@ -1,15 +1,30 @@
+
+# Notes for Frontend dev
 //we will need to serve users
 //we will need to serve growing units/plants
   //images, the users who have access
 
+If you want to have access to this server while you work, you can do so by
+- cloning this repo 
+- npm install
+- npm run watch
 
-  ### Endpoints for the Frontend to get info
+it will be served from http://localhost:3004/
 
-  endpoint, verb, params, info, response
-  GET all users
-  GET 1 user
-  DELETE user
 
+These 2 will be most relevant to you </br>
+http://localhost:3004/api/growing_unit/ </br>
+http://localhost:3004/api/users
+
+since http://localhost:3004/ wont be the final url, you may wanna save that as the baseUrl
+and then when we have a proper url, we will just replace that in baseUrl.
+
+
+If you want access to the database so you can play with the objects, ask me and I will give you access
+You will have to sign up to mongodb so i can add you to the project
+
+The passwords for everything is in a .env file. The server wont work until you have them.
+Ask me for them
 
 <h2>Users</h2>
 <h3>/api/users</h3>
@@ -27,7 +42,7 @@
     <td>/api/users</td>
     <td>get all users</td>
     <td>[</br>userObj, </br> <code>{
-        "id": 1,</br>
+        "user_id": 1,</br>
         "name": "Leanne Graham",</br>
         "username": "Bret",</br>
         "email": "Sincere@april.biz"</br>
@@ -39,7 +54,7 @@
     <td>/api/users/:id</td>
     <td>get a user of the id</td>
      <td><code>{
-        "id": 1,</br>
+        "user_id": 1,</br>
         "name": "Leanne Graham",</br>
         "username": "Bret",</br>
         "email": "Sincere@april.biz"</br>
@@ -49,9 +64,16 @@
   <tr>
     <td>POST</td>
     <td>/api/users/</td>
-    <td>add a new user</td>
+    <td>add a new user</br>
+      <ul>
+        <li>usernames must be unique in the system </li>
+        <li>username is required</li>
+        <li>minimum length is 4 characters</li>
+        <li></li>
+      </ul>
+    </td>
     <td><code>{
-        "id": 1,</br>
+        "user_id": 1,</br>
         "name": "Leanne Graham",</br>
         "username": "Bret",</br>
         "email": "Sincere@april.biz"</br>
