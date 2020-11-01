@@ -1,7 +1,8 @@
 const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
 const { multerUploadOptions, S3, uploadParams } = require('../utils/imageHandler');
-const GrowingUnit = require('../models/growing_units');
+const GrowingUnit = require('../models/growing_unit');
+
 
 //get all growing units
 growingUnitsRouter.get('/', async (request, response, next) => {
@@ -152,7 +153,8 @@ growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
     
 
     //there is an Image, then it should be uploaded and added to the object
-    if (request.file){//TODO
+    if (request.file){
+      //TODO: check whether the one uploading is the right user to upload
       console.log('There is an image file ',request.file);
 
       //upload image

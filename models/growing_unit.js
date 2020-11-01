@@ -1,6 +1,6 @@
 const mongoose= require('mongoose');
 
-
+//TODO: validation of data
 
 const growingUnitSchema = new mongoose.Schema({
   /*scientific_details_trefle: {
