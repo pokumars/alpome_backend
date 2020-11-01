@@ -1,7 +1,7 @@
 const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
 const { multerUploadOptions, S3, uploadParams } = require('../utils/imageHandler');
-const GrowingUnit = require('../models/growing_unit');
+const GrowingUnit = require('../models/growing_units');
 
 
 //get all growing units
@@ -11,7 +11,7 @@ growingUnitsRouter.get('/', async (request, response, next) => {
     const gUnits = await GrowingUnit
       .find({});
 
-    response.json(gUnits);
+    response.json(gUnits.toJSON());
     //.populate('user');
   }catch(exception){
     next(exception);
@@ -25,7 +25,7 @@ growingUnitsRouter.get('/:id', async (request, response, next) => {
       .findById(request.params.id);
 
     if (growingUnit) {
-      response.json(growingUnit);
+      response.json(growingUnit.toJSON());
     } else {
       response.status(404).json({
         error: 'growingUnit does not exist'
@@ -105,7 +105,7 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
 
     if (updatedUnit) {
       //console.log(updatedUnit);
-      response.json(updatedUnit);
+      response.json(updatedUnit.toJSON());
     } else {
       logger.error('some error updating growing unit of id ', unitId);
       response.json({

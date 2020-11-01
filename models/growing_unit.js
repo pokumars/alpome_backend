@@ -20,7 +20,8 @@ const growingUnitSchema = new mongoose.Schema({
   images: [{image_url: String, date_uploaded: Date, }]
 });
 
-
+//Remember to set .toJSON() on any mongoDB obj sent as a response else,
+// it wont transform to what is specified in the .set('toJSON') you made below
 growingUnitSchema.set('toJSON', {
   transform:(document, returnedObject) => {
     returnedObject.unit_id = returnedObject._id.toString();
