@@ -37,9 +37,10 @@ usersRouter.delete('/:id',(request, response) => {
 });
 
 // endpoint /api/users
-usersRouter.post('', (request, response) => {
+usersRouter.post('/', (request, response) => {
   const body = request.body;
-  if(!body.name, !body.username, !body.email) {
+  console.log(body);
+  /*if(!body.name, !body.username, !body.email) {
     response.status(400).json({
       error: 'some information were missing in the request'
     });
@@ -48,7 +49,12 @@ usersRouter.post('', (request, response) => {
   console.log('GET /api/users', userObj);
 
   persons = [...persons, userObj];
-  response.send(persons);
+  response.send(persons);*/
+  response.send(`
+  <p>Thisthe /api/users and bla bla</p> 
+  You said something??
+
+  `);
 });
 
 module.exports = usersRouter;

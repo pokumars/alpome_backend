@@ -1,7 +1,7 @@
 const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
 const { multerUploadOptions, S3, uploadParams } = require('../utils/imageHandler');
-const GrowingUnit = require('../models/growing_units');
+const GrowingUnit = require('../models/growing_unit');
 
 
 //get all growing units

@@ -15,6 +15,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "mongoose": "^5.10.9",
+    "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.10.0",
     "multer": "^1.4.2",
     "uuid": "^8.3.1"
@@ -24,5 +25,5 @@
     "jest": "^26.6.0",
     "nodemon": "^2.0.6"
   },
-  "proxy": "http://localhost:3002"
+  "proxy": "http://localhost:3004"
 }

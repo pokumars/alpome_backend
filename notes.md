@@ -30,6 +30,7 @@ Ask me for them
 <h3>/api/users</h3>
 
 <table>
+
   <tr>
     <th>Verb</th>
     <th>Endpoint</th>
@@ -37,6 +38,7 @@ Ask me for them
     <th>Example Response</th>
     <th>Params</th>
   </tr>
+
   <tr>
     <td>GET</td>
     <td>/api/users</td>
@@ -49,6 +51,7 @@ Ask me for them
     }</code>,</br> userObj,</br> ......</br>]</td>
     <td>TODO</td>
   </tr>
+
   <tr>
     <td>GET</td>
     <td>/api/users/:id</td>
@@ -61,14 +64,16 @@ Ask me for them
     }</code> </td>
     <td>urlParam id of type int</td>
   </tr>
+
   <tr>
     <td>POST</td>
     <td>/api/users/</td>
     <td>add a new user</br>
+    Take a look at userSchema in alpome_backend\models\user.js for more details
       <ul>
         <li>usernames must be unique in the system </li>
         <li>username is required</li>
-        <li>minimum length is 4 characters</li>
+        <li>minimum length is 4 characters; no whitespaces</li>
         <li></li>
       </ul>
     </td>
@@ -80,12 +85,13 @@ Ask me for them
     }</code> </td>
     <td></td>
   </tr>
-    <tr>
-    <td>PUT</td>
-    <td>/api/users/:id</td>
-    <td>update a user TODO : not added yet</td>
-    <td>TODO : the new object </td>
-    <td>urlParam id of type int</td>
+
+  <tr>
+      <td>PUT</td>
+      <td>/api/users/:id</td>
+      <td>update a user TODO : not added yet</td>
+      <td>TODO : the new object </td>
+      <td>urlParam id of type int</td>
   </tr>
   
 </table>
@@ -140,7 +146,8 @@ Ask me for them
   <tr>
     <td>POST</td>
     <td>/api/growing_unit/</td>
-    <td>add a new growing unit</td>
+    <td>add a new growing unit </br>
+    Take a look at growingUnitSchema in alpome_backend\models\growing_unit.js for more details</td>
     <td><code>{
        "common_names": [</br>
         "Christmas Tree"</br>
