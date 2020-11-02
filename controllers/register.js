@@ -1,0 +1,1 @@
+//TODO: check whether the current username is not in use and send back smth that says yes or no
