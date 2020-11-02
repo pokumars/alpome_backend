@@ -226,16 +226,16 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
         //add image object to gull growing unit object
         growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;
         console.log('growingUnitTemporaryObject ', growingUnitTemporaryObject);
-        //TODO change from using body.owner in finding user to using the token to find user
+        
         console.log('--------------unit with image ---------------');
-
+        //TODO change from using body.owner in finding user to using the token to find user
         const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, next);
         response.status(201).json(savedGrowingUnit);
 
       });
     } else {
       console.log('--------------There is no image file with this unit ---------------');
-
+      //TODO change from using body.owner in finding user to using the token to find user
       const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, next);
       response.status(201).json(savedGrowingUnit);
     }
@@ -245,4 +245,6 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
   }
 });
 
+
+//TODO: delete image from growing unit (that means from S3 as well)
 module.exports = growingUnitsRouter;

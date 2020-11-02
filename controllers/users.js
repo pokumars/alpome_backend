@@ -38,6 +38,7 @@ usersRouter.get('/:id', async (request, response, next) => {
 usersRouter.delete('/:id',async (request, response, next) => {
   //TODO: confirm user  has token before they can delete themselves.
   //TODO: confirm that user can only delete they themselves
+  //TODO: delete user means delete all their uploaded units as well as their images
 
   const id = request.params.id;
   try {
@@ -87,3 +88,4 @@ usersRouter.post('/', async (request, response, next) => {
 });
 
 module.exports = usersRouter;
+
