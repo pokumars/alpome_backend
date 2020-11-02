@@ -1,3 +1,4 @@
+
 const now = new Date();
 
 const currentLocalTime = ()=> {
@@ -8,4 +9,11 @@ const currentLocalDateTime = ()=> {
   return `--[ ${now} ]--`;
 };
 
-module.exports = { currentLocalTime, currentLocalDateTime };
+
+//
+const deleteSensitiveKeyFromObj = (object, keyToDelete) => {
+  delete object[keyToDelete];
+  return object;
+};
+
+module.exports = { currentLocalTime, currentLocalDateTime, deleteSensitiveKeyFromObj };
