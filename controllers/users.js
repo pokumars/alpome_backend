@@ -3,10 +3,11 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const { SALT_ROUNDS } = require('../utils/config');
 
+const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1};
 // /api/users/ Get all users
 usersRouter.get('/', async (request, response, next) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).populate('own_units', populatedGrowingUnitFields) ;
     console.log('GET /api/users');
     response.send(users);
   } catch (error) {
@@ -18,7 +19,7 @@ usersRouter.get('/', async (request, response, next) => {
 usersRouter.get('/:id', async (request, response, next) => {
   const id = request.params.id;
   try {      
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate('own_units', populatedGrowingUnitFields);
     console.log(user);
 
     if (user) {

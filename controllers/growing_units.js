@@ -2,6 +2,8 @@ const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
 const { multerUploadOptions, S3, uploadParams } = require('../utils/imageHandler');
 const GrowingUnit = require('../models/growing_unit');
+const User = require('../models/user');
+
 
 
 //get all growing units
@@ -49,6 +51,7 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     
     //TODO: add user token mechanism
     //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.
+    //TODO: if a unit is deleted, it should be removed from the user's list of units too
     
     const unitToDelete = await GrowingUnit
       .findByIdAndDelete(request.params.id);
@@ -118,8 +121,44 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
   }
 });
 
+const saveGrowingUnit = (unitToSave, next) => {
+  //uploadedGrowingUnit is the object mongodb returns to us after it confirms having received it.
+  const uploadedGrowingUnit = new GrowingUnit(unitToSave);
+  return uploadedGrowingUnit.save()
+    .then(savedGrowingUnit => savedGrowingUnit.toJSON())
+    .then(savedAndFormattedGrUnit => {
+      return savedAndFormattedGrUnit;
+    })
+    .catch(error => next(error));
+};
+
+const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, next) => {
+  //save growing unit and then add that unit's id to the list of units owned by that user
+  try {
+    
+    //find the user saving the growing unit
+    const user = await User.findById(userId);
+    console.log('----------------user that is posting this unit', user);
+
+    //save the growing unit
+    const savedUnit = await saveGrowingUnit(growingUnitToSave, next);
+    console.log('-------------------------unit that has been saved ', savedUnit);
+
+    //add that unit's id to the user's array of units
+    user.own_units = user.own_units.concat(savedUnit.unit_id);
+    const updatedUser = await user.save();
+    console.log('-------------------------user that has been updated ', updatedUser);
+
+    return savedUnit;
+  } catch (error) {
+    next(error);
+    return;
+  }
+};
+
+
 // /api/growing_unit
-growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
+growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next) => {
   const body = request.body;
   console.log('POST an object /api/growing_unit', body);
 
@@ -132,6 +171,8 @@ growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
       Most likely plant nickname, plant location, or Supragrden(True/false)`
     });
   }
+
+  //Find the user and then add the growing unit to them
 
   
   try {//if else clause comes in for image or no image upload 
@@ -158,7 +199,7 @@ growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
       console.log('There is an image file ',request.file);
 
       //upload image
-      S3.upload(uploadParams(request), (error, data) => {
+      S3.upload(uploadParams(request), async (error, data) => {
         if(error){
           logger.error(error);
           response.status(500).send(error);
@@ -185,25 +226,18 @@ growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
         //add image object to gull growing unit object
         growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;
         console.log('growingUnitTemporaryObject ', growingUnitTemporaryObject);
+        //TODO change from using body.owner in finding user to using the token to find user
+        console.log('--------------unit with image ---------------');
 
-        //uploadedGrowingUnit is the object mongodb returns to us after it confirms having received it.
-        const uploadedGrowingUnit = new GrowingUnit(growingUnitTemporaryObject);
-        uploadedGrowingUnit.save()
-          .then(savedGrowingUnit => savedGrowingUnit.toJSON())
-          .then(savedAndFormattedGrUnit => {
-            response.status(200).json(savedAndFormattedGrUnit);
-          })
-          .catch(error => next(error));
+        const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, next);
+        response.status(201).json(savedGrowingUnit);
+
       });
     } else {
-      console.log('--------------There is no image file ---------------');
-      const uploadedGrowingUnit = new GrowingUnit(growingUnitTemporaryObject);
-      uploadedGrowingUnit.save()
-        .then(savedGrowingUnit => savedGrowingUnit.toJSON())
-        .then(savedAndFormattedGrUnit => {
-          response.status(200).json(savedAndFormattedGrUnit);
-        })
-        .catch(error => next(error));
+      console.log('--------------There is no image file with this unit ---------------');
+
+      const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, next);
+      response.status(201).json(savedGrowingUnit);
     }
 
   } catch (error) {
