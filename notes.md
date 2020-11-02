@@ -181,3 +181,9 @@ Ask me for them
   </tr>
   
 </table>
+
+TODO:
+1. when registering, the username must be unique. So whilst the user types, you can make a request to api/register/is_name_free and I will send back a true or false (or smth else; I will figure it out later).
+
+2. When a user logs in they will get a token that they will need every time they make some request. It verifies
+that they are themselves and they are logged in. I dont have it yet setup so dont worry about it until I do. When I do, all you have to is save it on the pc and then attach it to the request headers (or smth like that).
