@@ -2,20 +2,35 @@ const mongoose= require('mongoose');
 
 //TODO: validation of data
 
+const userDBReference = {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User'
+};
+
 const growingUnitSchema = new mongoose.Schema({
   /*scientific_details_trefle: {
     id: String,
     scientific_name: String
   },*/
-  nickname: String,
+  nickname: {
+    type: String,
+    minlength: 3,
+    required: true
+  },
   location: String,
-  supragarden: Boolean,
+  supragarden: {
+    type: Boolean,
+    required: true
+  },
   last_watered: Date, //null if supragarden,
   watering_frequency: Number,
   data_source: String,
   common_names: [String],
-  owner: String,
-  shared_access: [String],
+  owner: {
+    ...userDBReference,
+    required: true
+  },
+  shared_access: [userDBReference],
   stream_url: String,
   images: [{image_url: String, date_uploaded: Date, }]
 });

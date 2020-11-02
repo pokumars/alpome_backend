@@ -9,7 +9,8 @@ growingUnitsRouter.get('/', async (request, response, next) => {
 
   try {
     const gUnits = await GrowingUnit
-      .find({});
+      .find({})
+      .populate('owner', {username: 1, user_id: 1});
 
     response.json(gUnits);
     //.populate('user');
@@ -22,7 +23,8 @@ growingUnitsRouter.get('/', async (request, response, next) => {
 growingUnitsRouter.get('/:id', async (request, response, next) => {
   try {
     const growingUnit = await GrowingUnit
-      .findById(request.params.id);
+      .findById(request.params.id)
+      .populate('owner', {username: 1, user_id: 1});
 
     if (growingUnit) {
       response.json(growingUnit.toJSON());
@@ -144,7 +146,7 @@ growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
       watering_frequency: body.watering_frequency || null,
       data_source: body.data_source || null,
       common_names: typeof(body.common_names) === 'string' ? [body.common_names] : [...body.common_names],
-      owner: '',
+      owner: body.owner,
       shared_access: [],
       stream_url: body.url,
     };
