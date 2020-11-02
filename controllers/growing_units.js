@@ -11,7 +11,7 @@ growingUnitsRouter.get('/', async (request, response, next) => {
     const gUnits = await GrowingUnit
       .find({});
 
-    response.json(gUnits.toJSON());
+    response.json(gUnits);
     //.populate('user');
   }catch(exception){
     next(exception);
