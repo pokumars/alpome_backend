@@ -1,3 +1,4 @@
+const logger = require("./logger");
 
 const now = new Date();
 
@@ -10,10 +11,6 @@ const currentLocalDateTime = ()=> {
 };
 
 
-//
-const deleteSensitiveKeyFromObj = (object, keyToDelete) => {
-  delete object[keyToDelete];
-  return object;
-};
 
-module.exports = { currentLocalTime, currentLocalDateTime, deleteSensitiveKeyFromObj };
+
+module.exports = { currentLocalTime, currentLocalDateTime };

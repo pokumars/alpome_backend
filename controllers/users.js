@@ -1,7 +1,8 @@
 const usersRouter = require('express').Router();
+const User = require('../models/user');
 const logger = require('../utils/logger');
-const genRandom = require('../scratchpad').createRandomNum;
-let persons = require('../scratchpad').persons;
+const bcrypt = require('bcrypt');
+const { SALT_ROUNDS } = require('../utils/config');
 
 // endpoint /
 usersRouter.get('/', (request, response) => {
@@ -25,7 +26,7 @@ usersRouter.get('/:id', (request, response) => {
 });
 
 // endpoint /api/users/:id
-usersRouter.delete('/:id',(request, response) => {
+usersRouter.delete('/:id',async (request, response) => {
   const id = request.params.id;
   try {
     persons = persons.filter(obj => Number(obj.id) !== Number(id));
@@ -37,24 +38,43 @@ usersRouter.delete('/:id',(request, response) => {
 });
 
 // endpoint /api/users
-usersRouter.post('/', (request, response) => {
-  const body = request.body;
-  console.log(body);
-  /*if(!body.name, !body.username, !body.email) {
+usersRouter.post('/', async (request, response, next) => {
+  try {
+    const body = request.body;
+
+    if(!body.username, !body.email, !body.password) {
+      return response.status(400).json({
+        error: `Some information is missing.
+       Either username, or email or password`
+      });
+    }
+    else if (body.password.length < 4){
+      return response.status(400).send({ error: 'password must be longer than 3 characters' });
+    }
+    const passwordHash = await bcrypt.hash(body.password, SALT_ROUNDS);
+
+    const userObj = {
+      email: body.email,
+      username: body.username,
+      passwordHash: passwordHash, //TODO: change this to actual passwordHash
+      own_units: [],
+      units_with_access:[]
+    };
+    console.log('userObj to save ----', userObj);
+    const user = new User(userObj);
+
+    const savedUser = await user.save();
+  
+    response.json(savedUser.toJSON());
+  } catch (exception) {
+    logger.error(exception);
     response.status(400).json({
-      error: 'some information were missing in the request'
+      error: `There was an error when adding a new user.
+      
+       ${exception}`
     });
+    next(exception);
   }
-  const userObj = {id: genRandom(1, 100000), ...body};
-  console.log('GET /api/users', userObj);
-
-  persons = [...persons, userObj];
-  response.send(persons);*/
-  response.send(`
-  <p>Thisthe /api/users and bla bla</p> 
-  You said something??
-
-  `);
 });
 
 module.exports = usersRouter;
