@@ -1,5 +1,3 @@
-const logger = require("./logger");
-
 const now = new Date();
 
 const currentLocalTime = ()=> {

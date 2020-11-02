@@ -34,7 +34,6 @@ growingUnitsRouter.get('/:id', async (request, response, next) => {
     }
   } catch (error) {
     next(error);
-    response.status(404).end();
   }
 });
 
@@ -61,7 +60,6 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     }
 
   } catch (error) {
-    logger.error(error);
     next(error);
   }
 });
@@ -208,8 +206,6 @@ growingUnitsRouter.post('/', multerUploadOptions, (request, response, next) => {
 
   } catch (error) {
     next(error);
-    response.status(400).json({  
-    });
   }
 });
 

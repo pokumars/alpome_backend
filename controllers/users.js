@@ -1,43 +1,57 @@
 const usersRouter = require('express').Router();
 const User = require('../models/user');
-const logger = require('../utils/logger');
 const bcrypt = require('bcrypt');
 const { SALT_ROUNDS } = require('../utils/config');
 
-// endpoint /
-usersRouter.get('/', (request, response) => {
-  console.log('GET /api/users');
-  response.send(persons);
-});
-
-// endpoint /api/users/:id
-usersRouter.get('/:id', (request, response) => {
-  console.log('GET /api/users/:id');
-  const id = request.params.id;
-  console.log(id);
-  const user = persons.find(user => Number(user.id) === Number(id));
-  if (user) {
-    response.send(user);
-  } else {
-    response.status(400).json({
-      error: 'user does not exist'
-    });
+// /api/users/ Get all users
+usersRouter.get('/', async (request, response, next) => {
+  try {
+    const users = await User.find({});
+    console.log('GET /api/users');
+    response.send(users);
+  } catch (error) {
+    next(error);
   }
 });
 
-// endpoint /api/users/:id
-usersRouter.delete('/:id',async (request, response) => {
+// /api/users/:id Get a single user by id
+usersRouter.get('/:id', async (request, response, next) => {
+  const id = request.params.id;
+  try {      
+    const user = await User.findById(id);
+    console.log(user);
+
+    if (user) {
+      response.send(user.toJSON());
+    } else {
+      response.status(400).json({
+        error: 'user does not exist or not found'
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// /api/users/:id delete a single user
+usersRouter.delete('/:id',async (request, response, next) => {
+  //TODO: confirm user  has token before they can delete themselves.
+  //TODO: confirm that user can only delete they themselves
+
   const id = request.params.id;
   try {
-    persons = persons.filter(obj => Number(obj.id) !== Number(id));
-    logger.info(`length of persons is now ${persons.length}`);
-    response.send(`length of persons is now ${persons.length}`);
+
+
+    const deletedUser = await User.findByIdAndDelete(id);
+    console.log(deletedUser);
+    
+    response.send(`user has been deleted ${deletedUser}`);
   } catch (error) {
-    logger.error(error);
+    next(error);
   }
 });
 
-// endpoint /api/users
+// /api/users add a user
 usersRouter.post('/', async (request, response, next) => {
   try {
     const body = request.body;
@@ -57,8 +71,8 @@ usersRouter.post('/', async (request, response, next) => {
       email: body.email,
       username: body.username,
       passwordHash: passwordHash, //TODO: change this to actual passwordHash
-      own_units: [],
-      units_with_access:[]
+      own_units: body.own_units|| [],
+      units_with_access:body.units_with_access || []
     };
     console.log('userObj to save ----', userObj);
     const user = new User(userObj);
@@ -67,12 +81,6 @@ usersRouter.post('/', async (request, response, next) => {
   
     response.json(savedUser.toJSON());
   } catch (exception) {
-    logger.error(exception);
-    response.status(400).json({
-      error: `There was an error when adding a new user.
-      
-       ${exception}`
-    });
     next(exception);
   }
 });
