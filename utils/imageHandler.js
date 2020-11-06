@@ -53,6 +53,29 @@ const uploadParams = (request) => {
   };
 };
 
+/**
+ * 
+ * @param {[S3Keys]} itemKeysToDelete - keys of the item to delete
+ * @param {*} response - Response of the router request
+ */
+const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
+  const deleteParams = {
+    Bucket: myS3Bucket, /* required */
+    Delete: { /* required */
+      Objects: itemKeysToDelete.map(x => Object.assign({}, {Key: x}))
+    }
+  };
+  console.log(deleteParams);
+  S3.deleteObjects(deleteParams, (error, data) => {
+    if (error) {
+      return response.status(500).send({error: error});
+    } else {
+      console.log(data);
+      return data;
+    }
+  });
+};
 
-module.exports = { multerUploadOptions, S3, uploadParams };
+
+module.exports = { multerUploadOptions, S3, uploadParams, deleteGrowingUnitImagesFromS3 };
 

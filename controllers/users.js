@@ -3,6 +3,7 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const { SALT_ROUNDS } = require('../utils/config');
 const GrowingUnit = require('../models/growing_unit');
+const { deleteGrowingUnitImagesFromS3 } = require('../utils/imageHandler');
 
 const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1};
 // /api/users/ Get all users
@@ -37,23 +38,34 @@ usersRouter.get('/:id', async (request, response, next) => {
 
 // /api/users/:id delete a single user
 usersRouter.delete('/:id',async (request, response, next) => {
+  //TODO: when you delete a unit, delete it from one that people have access to. Or then do it when people try to
   //TODO: confirm user  has token before they can delete themselves.
   //TODO: confirm that user can only delete they themselves
   //TODO: delete user means delete all their uploaded units as well as their images
-
   const id = request.params.id;
   try {
     const user = await User.findById(id,  { username: 1, own_units:1});
-    const theUsersDeletedUnits = await GrowingUnit.deleteMany({_id:{
+    if(!user) return response.status(204);//204 doesnt send any message with it
+
+    const theUsersGrowingUnits = await GrowingUnit.find({_id:{
       $in: [...user.own_units]
     }});
-    console.log(theUsersDeletedUnits);
-
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    console.log(deletedUser);
     
-    response.status(204).send(`user has been deleted ${deletedUser}`);
+    //TEST: if one user has 3 units that all have 3 images. Make sure all images are deleted
+    //1. get all units to be deleted, map that array and get all image objects which is itself an array
+    //2. Flatten from Array of Array of objects [[{imgObj},{imgObj}], [{imgObj},{imgObj}]] to array of objects[{imgObj}]
+    //3. use map to get the s3 key of the images and put that in an array [key, key, key]
+    const allThisUsersUnitImageKeys = theUsersGrowingUnits.map(u => u.images).flat(2).map(img => img.Key);
+    deleteGrowingUnitImagesFromS3(allThisUsersUnitImageKeys, response);
+
+    await GrowingUnit.deleteMany({_id:{
+      $in: [...user.own_units]
+    }});
+
+    await User.findByIdAndDelete(id);
+    
+    response.status(204).end();
+    //response.status(204).send(`user has been deleted ${allUsersUnitImages}`);
   } catch (error) {
     next(error);
   }

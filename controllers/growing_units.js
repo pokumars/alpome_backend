@@ -53,7 +53,7 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.
     //TODO: if a unit is deleted, it should be removed from the user's list of units too
     
-    
+
     const unitToDelete = await GrowingUnit
       .findByIdAndDelete(request.params.id);
     if(unitToDelete) {
@@ -164,9 +164,9 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
   console.log('POST an object /api/growing_unit', body);
 
   if (body.nickname === undefined  || body.location === undefined || body.supragarden === undefined) {
-    console.log( body.nickname);
-    console.log( body.location);
-    console.log( body.supragarden);
+    console.log( 'body.nickname-----------',body.nickname);
+    console.log( 'body.location-----------',body.location);
+    console.log( 'body.supragarden -----------',body.supragarden);
     return response.status(400).json({
       error: `some information were missing in the request.
       Most likely plant nickname, plant location, or Supragrden(True/false)`
@@ -218,6 +218,7 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
         //get saved image details and create image object
         const imageToAddToGrowingUnitObject = {
           'fileName': data.key,
+          'Key': data.Key,
           'image_url': data.Location,
           'date_uploaded': Date.now()
         };

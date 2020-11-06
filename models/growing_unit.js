@@ -32,7 +32,7 @@ const growingUnitSchema = new mongoose.Schema({
   },
   shared_access: [userDBReference],
   stream_url: String,
-  images: [{image_url: String, date_uploaded: Date, }]
+  images: [{image_url: String, date_uploaded: Date, fileName: String,  Key: String, }]
 });
 
 //Remember to set .toJSON() on any mongoDB obj sent as a response else,
