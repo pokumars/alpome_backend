@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const usersRouter = require('./controllers/users');
 const growingUnitsRouter = require('./controllers/growing_units');
+const loginRouter = require('./controllers/login');
 const logger = require('./utils/logger');
 const config = require('./utils/config');
 const mongoose = require('mongoose');
@@ -34,8 +35,9 @@ mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((error) => {
     logger.error('error connecting to MongoDB:', error.message);
   });
-
+  
 app.use('/api/users', usersRouter);
+app.use('/api/login', loginRouter);
 app.use('/api/growing_unit', growingUnitsRouter);
 
 app.get('/', (request, response) => {

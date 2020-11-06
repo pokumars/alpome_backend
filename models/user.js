@@ -13,7 +13,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim:true
   },
-  passwordHash: String,
+  passwordHash: {
+    required: true,
+    type: String
+  },
   own_units: [ growingUnitDBReference ],
   units_with_access: [ growingUnitDBReference ],
   email: {
