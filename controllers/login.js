@@ -1,8 +1,9 @@
 //TODO: a user logging in
 // give token that they use for the session
-
+const { SECRET } = require('../utils/config');
 const loginRouter = require('express').Router();
 const bcrypt= require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 loginRouter.post('/', async (request, response, next) => {
@@ -23,11 +24,16 @@ loginRouter.post('/', async (request, response, next) => {
         error: 'invalid username or password'
       });
     }
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    };
+    const token = jwt.sign(userForToken, SECRET);
     console.log(`${user.username} put in the correct password`);
 
     response
       .status(200)
-      .send(user.toJSON());
+      .send({token, user: user.toJSON()});
   } catch (error) {
     next(error);
   }

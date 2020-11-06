@@ -53,6 +53,7 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.
     //TODO: if a unit is deleted, it should be removed from the user's list of units too
     
+    
     const unitToDelete = await GrowingUnit
       .findByIdAndDelete(request.params.id);
     if(unitToDelete) {

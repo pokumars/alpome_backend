@@ -41,16 +41,20 @@ Ask me for them
     <td>POST</td>
     <td>/api/login</td>
     <td>log existing user in</td>
-    <td> <code>{</br>
-      "own_units": [</br>
-          "5fa04b8b5f19c60974e9926d",</br>
-          "5fa04c5561f1523d2877b498",</br>
-      ],</br>
-      "units_with_access": [],</br>
-      "email": "testUser3@testme.com",</br>
-      "username": "testUser3",</br>
-      "user_id": "5fa018f47400402da4bc9fae"</br>
-      }</code>
+    <td> 
+      <code>{</br>
+            "token":</br> "eyJhbGciOiJIUzI1NiIsI </br>
+            "user": {</br>
+                "own_units": [</br>
+                    "5fa04b8b5f19c60974e9926d",</br>
+                    "5fa04c5561f1523d2877b498",</br>
+                ],</br>
+                "units_with_access": [],</br>
+                "email": "testUser3@testme.com",</br>
+                "username": "testUser3",</br>
+                "user_id": "5fa018f47400402da4bc9fae"</br>
+            }}</br>
+        </code>
     </td>
     <td><code>{</br>
       "username": "testUser3",</br>
