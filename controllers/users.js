@@ -2,6 +2,7 @@ const usersRouter = require('express').Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const { SALT_ROUNDS } = require('../utils/config');
+const GrowingUnit = require('../models/growing_unit');
 
 const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1};
 // /api/users/ Get all users
@@ -42,12 +43,17 @@ usersRouter.delete('/:id',async (request, response, next) => {
 
   const id = request.params.id;
   try {
-
+    const user = await User.findById(id,  { username: 1, own_units:1});
+    const theUsersDeletedUnits = await GrowingUnit.deleteMany({_id:{
+      $in: [...user.own_units]
+    }});
+    console.log(theUsersDeletedUnits);
 
     const deletedUser = await User.findByIdAndDelete(id);
+
     console.log(deletedUser);
     
-    response.send(`user has been deleted ${deletedUser}`);
+    response.status(204).send(`user has been deleted ${deletedUser}`);
   } catch (error) {
     next(error);
   }
