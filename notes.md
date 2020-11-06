@@ -26,6 +26,40 @@ You will have to sign up to mongodb so i can add you to the project
 The passwords for everything is in a .env file. The server wont work until you have them.
 Ask me for them
 
+<h2>Login</h2>
+<h3>/api/growing_unit</h3>
+
+<table>
+  <tr>
+    <th>Verb</th>
+    <th>Endpoint</th>
+    <th>Info</th>
+    <th>Example Response</th>
+    <th>Params</th>
+  </tr>
+  <tr>
+    <td>POST</td>
+    <td>/api/login</td>
+    <td>log existing user in</td>
+    <td> <code>{</br>
+      "own_units": [</br>
+          "5fa04b8b5f19c60974e9926d",</br>
+          "5fa04c5561f1523d2877b498",</br>
+      ],</br>
+      "units_with_access": [],</br>
+      "email": "testUser3@testme.com",</br>
+      "username": "testUser3",</br>
+      "user_id": "5fa018f47400402da4bc9fae"</br>
+      }</code>
+    </td>
+    <td><code>{</br>
+      "username": "testUser3",</br>
+      "password": "somePassword"</br>
+      }</code>
+    </td>
+  </tr>
+</table>
+
 <h2>Users</h2>
 <h3>/api/users</h3>
 
