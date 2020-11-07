@@ -25,7 +25,7 @@ app.use(morgan((tokens, req, res) => {
   ].join(' ');
 }));
 
-const dbUri = config.MONGO_DB_TRIAL_URI;
+const dbUri = config.MONGODB_URI;
 logger.info('connecting to MongoDB');
 
 mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })

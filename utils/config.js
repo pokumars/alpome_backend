@@ -1,8 +1,15 @@
 require('dotenv').config();
 
 let MONGODB_URI = process.env.MONGO_DB_URI;
-let MONGO_DB_TRIAL_URI = process.env.MONGO_DB_TRIAL_URI;
 let PORT = process.env.PORT;
+
+if (process.env.NODE_ENV === 'test') {
+  MONGODB_URI = process.env.MONGO_DB_TRIAL_URI;
+}
+
+if (process.env.NODE_ENV === 'development') {
+  MONGODB_URI = process.env.MONGO_DB_TRIAL_URI;
+}
 
 let AWS_ID = process.env.AWS_ID;
 let AWS_SECRET = process.env.AWS_SECRET;
@@ -14,7 +21,6 @@ let SALT_ROUNDS = 10;
 
 //TODO: add the other environment keys
 module.exports = {
-  MONGO_DB_TRIAL_URI,
   MONGODB_URI,
   PORT,
   AWS_ID,
