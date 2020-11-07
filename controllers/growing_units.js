@@ -133,13 +133,18 @@ const saveGrowingUnit = (unitToSave, next) => {
     .catch(error => next(error));
 };
 
-const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, next) => {
+const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, response, next) => {
   //save growing unit and then add that unit's id to the list of units owned by that user
   try {
     
     //find the user saving the growing unit
     const user = await User.findById(userId);
+    console.log('----------------uuserId in request ---', userId);
     console.log('----------------user that is posting this unit', user);
+    if(!user) {
+      return response.status(400).json({error: `User does not exist. So Could not save the growing unit.
+      Check user id (aka owner in request body)`});
+    }
 
     //save the growing unit
     const savedUnit = await saveGrowingUnit(growingUnitToSave, next);
@@ -231,14 +236,14 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
         
         console.log('--------------unit with image ---------------');
         //TODO change from using body.owner in finding user to using the token to find user
-        const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, next);
+        const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, response, next);
         response.status(201).json(savedGrowingUnit);
 
       });
     } else {
       console.log('--------------There is no image file with this unit ---------------');
       //TODO change from using body.owner in finding user to using the token to find user
-      const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, next);
+      const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, response, next);
       response.status(201).json(savedGrowingUnit);
     }
 
