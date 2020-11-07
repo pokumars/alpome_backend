@@ -1,6 +1,7 @@
 require('dotenv').config();
 const multer= require('multer');
 const AWS = require('aws-sdk');
+const logger = require('./logger');
 const uuid = require('uuid').v4;
 const myS3Bucket= process.env.AWS_BUCKET_NAME; //bucketOwner = process.env.AWS_BUCKET_OWNER;
 
@@ -29,16 +30,11 @@ const contentTypesObj = {
   'tiff': 'image/tiff',
 };
 
-
-//console.log(request.file);
-
-
 /*To prevent the images auto-downloading, you have to add the ContentType and ContentDisposition.
  ContentType lets S3 knows what the filetype is and then knows it is displayable in the browser
  or not. ContentDisposition to inline tells it to display in the browser if possible */
 const uploadParams = (request) => {
-
-  console.log('image received');
+  logger.info('image received');
   let myFile = request.file.originalname.split('.');
   const fileType = myFile[myFile.length -1];
 
@@ -64,12 +60,13 @@ const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
       Objects: itemKeysToDelete.map(x => Object.assign({}, {Key: x}))
     }
   };
-  console.log(deleteParams);
+  logger.info(deleteParams);
   S3.deleteObjects(deleteParams, (error, data) => {
     if (error) {
+      logger.error(error);
       return response.status(500).send({error: error});
     } else {
-      console.log(data);
+      logger.info(data);
       return data;
     }
   });

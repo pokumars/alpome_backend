@@ -4,13 +4,14 @@ const bcrypt = require('bcrypt');
 const { SALT_ROUNDS } = require('../utils/config');
 const GrowingUnit = require('../models/growing_unit');
 const { deleteGrowingUnitImagesFromS3 } = require('../utils/imageHandler');
+const logger = require('../utils/logger');
 
 const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1};
 // /api/users/ Get all users
 usersRouter.get('/', async (request, response, next) => {
   try {
     const users = await User.find({}).populate('own_units', populatedGrowingUnitFields) ;
-    console.log('GET /api/users');
+    logger.info('GET /api/users');
     response.send(users);
   } catch (error) {
     next(error);
@@ -22,7 +23,7 @@ usersRouter.get('/:id', async (request, response, next) => {
   const id = request.params.id;
   try {      
     const user = await User.findById(id).populate('own_units', populatedGrowingUnitFields);
-    console.log(user);
+    logger.info(user);
 
     if (user) {
       response.send(user.toJSON());
@@ -94,7 +95,7 @@ usersRouter.post('/', async (request, response, next) => {
       own_units: body.own_units|| [],
       units_with_access:body.units_with_access || []
     };
-    console.log('userObj to save ----', userObj);
+    logger.info('userObj to save ----', userObj);
     const user = new User(userObj);
 
     const savedUser = await user.save();

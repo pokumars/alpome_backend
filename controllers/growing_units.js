@@ -79,7 +79,7 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
   const unitId = request.params.id;
   //there is an Image, then it should be uploaded and added to the object
   if (request.file){//TODO
-    console.log('There is an image file ',request.file);
+    logger.info('There is an image file ',request.file);
     //upload image
 
     //get image details
@@ -108,7 +108,7 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
       .findByIdAndUpdate(unitId, replacement, { new: true });
 
     if (updatedUnit) {
-      //console.log(updatedUnit);
+      //logger.info(updatedUnit);
       response.json(updatedUnit.toJSON());
     } else {
       logger.error('some error updating growing unit of id ', unitId);
@@ -139,21 +139,22 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
     
     //find the user saving the growing unit
     const user = await User.findById(userId);
-    console.log('----------------uuserId in request ---', userId);
-    console.log('----------------user that is posting this unit', user);
+    logger.info('----------------uuserId in request ---', userId);
+    logger.info('----------------user that is posting this unit', user);
     if(!user) {
-      return response.status(400).json({error: `User does not exist. So Could not save the growing unit.
-      Check user id (aka owner in request body)`});
+      const errorMsg = 'User does not exist. So Could not save the growing unit. Check user id (aka owner in request body)';
+      logger.error('saveGrowingUnitAndAddToUserObject------- ',errorMsg);
+      return response.status(400).json({error: errorMsg});
     }
 
     //save the growing unit
     const savedUnit = await saveGrowingUnit(growingUnitToSave, next);
-    console.log('-------------------------unit that has been saved ', savedUnit);
+    logger.info('-------------------------unit that has been saved ', savedUnit);
 
     //add that unit's id to the user's array of units
     user.own_units = user.own_units.concat(savedUnit.unit_id);
     const updatedUser = await user.save();
-    console.log('-------------------------user that has been updated ', updatedUser);
+    logger.info('-------------------------user that has been updated ', updatedUser);
 
     return savedUnit;
   } catch (error) {
@@ -166,12 +167,12 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
 // /api/growing_unit
 growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next) => {
   const body = request.body;
-  console.log('POST an object /api/growing_unit', body);
+  logger.info('POST an object /api/growing_unit', body);
 
   if (body.nickname === undefined  || body.location === undefined || body.supragarden === undefined) {
-    console.log( 'body.nickname-----------',body.nickname);
-    console.log( 'body.location-----------',body.location);
-    console.log( 'body.supragarden -----------',body.supragarden);
+    logger.error( 'body.nickname-----------',body.nickname);
+    logger.error( 'body.location-----------',body.location);
+    logger.error( 'body.supragarden -----------',body.supragarden);
     return response.status(400).json({
       error: `some information were missing in the request.
       Most likely plant nickname, plant location, or Supragrden(True/false)`
@@ -202,7 +203,7 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
     //there is an Image, then it should be uploaded and added to the object
     if (request.file){
       //TODO: check whether the one uploading is the right user to upload
-      console.log('There is an image file ',request.file);
+      logger.info('There is an image file ',request.file);
 
       //upload image
       S3.upload(uploadParams(request), async (error, data) => {
@@ -228,20 +229,20 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
           'date_uploaded': Date.now()
         };
 
-        console.log('imageToAddToGrowingUnitObject ', imageToAddToGrowingUnitObject);
+        logger.info('imageToAddToGrowingUnitObject ', imageToAddToGrowingUnitObject);
 
         //add image object to gull growing unit object
         growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;
-        console.log('growingUnitTemporaryObject ', growingUnitTemporaryObject);
+        logger.info('growingUnitTemporaryObject ', growingUnitTemporaryObject);
         
-        console.log('--------------unit with image ---------------');
+        logger.info('--------------unit with image ---------------');
         //TODO change from using body.owner in finding user to using the token to find user
         const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, response, next);
         response.status(201).json(savedGrowingUnit);
 
       });
     } else {
-      console.log('--------------There is no image file with this unit ---------------');
+      logger.info('--------------There is no image file with this unit ---------------');
       //TODO change from using body.owner in finding user to using the token to find user
       const savedGrowingUnit = await saveGrowingUnitAndAddToUserObject(growingUnitTemporaryObject, body.owner, response, next);
       response.status(201).json(savedGrowingUnit);
