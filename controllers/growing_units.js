@@ -180,8 +180,6 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
   }
 
   //Find the user and then add the growing unit to them
-
-  
   try {//if else clause comes in for image or no image upload 
     
     //TODO: owner should be required. If no owner object should fail.
@@ -198,12 +196,20 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
       shared_access: [],
       stream_url: body.url,
     };
+    //If user doesnt exist/cant be found dont proceed at all
+    const user = await User.findById(body.owner);
+    if(!user) {
+      const errorMsg = 'User does not exist. So Could not save the growing unit. Check user id (aka owner in request body)';
+      logger.error('saveGrowingUnitAndAddToUserObject------- ',errorMsg);
+      return response.status(400).json({error: errorMsg});
+    }
     
-
     //there is an Image, then it should be uploaded and added to the object
     if (request.file){
+
       //TODO: check whether the one uploading is the right user to upload
       logger.info('There is an image file ',request.file);
+      console.log('There is an image file ',request.file);
 
       //upload image
       S3.upload(uploadParams(request), async (error, data) => {
