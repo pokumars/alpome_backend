@@ -6,7 +6,7 @@ const GrowingUnit = require('../models/growing_unit');
 const { deleteGrowingUnitImagesFromS3 } = require('../utils/imageHandler');
 const logger = require('../utils/logger');
 
-const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1};
+const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1, };
 // /api/users/ Get all users
 usersRouter.get('/', async (request, response, next) => {
   try {
