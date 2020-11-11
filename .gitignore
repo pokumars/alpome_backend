@@ -22,4 +22,5 @@ yarn-error.log*
 .env
 
 tryMongoMongoose.js
-zPlayground.js
+zPlayground.*
+debug.log

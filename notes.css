@@ -1,0 +1,22 @@
+#my-table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#my-table td, #my-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#my-table tr:nth-child(even){background-color: #586864;}
+
+#my-table tr:hover {background-color: #996677;}
+
+#my-table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}

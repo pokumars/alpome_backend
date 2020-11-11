@@ -1,4 +1,5 @@
 
+<link rel="stylesheet" type="text/css" media="all" href="notes.css" />
 # Notes for Frontend dev
 //we will need to serve users
 //we will need to serve growing units/plants
@@ -26,10 +27,10 @@ You will have to sign up to mongodb so i can add you to the project
 The passwords for everything is in a .env file. The server wont work until you have them.
 Ask me for them
 
-<h2>Login</h2>
+<h2  >Login</h2>
 <h3>/api/growing_unit</h3>
 
-<table>
+<table id="my-table">
   <tr>
     <th>Verb</th>
     <th>Endpoint</th>
@@ -67,85 +68,87 @@ Ask me for them
 <h2>Users</h2>
 <h3>/api/users</h3>
 
-<table>
-
-  <tr>
-    <th>Verb</th>
-    <th>Endpoint</th>
-    <th>Info</th>
-    <th>Example Response</th>
-    <th>Params</th>
-  </tr>
-
-  <tr>
-    <td>GET</td>
-    <td>/api/users</td>
-    <td>get all users</td>
-    <td>[</br>userObj, </br> <code>{
-        "user_id": 1,</br>
-        "name": "Leanne Graham",</br>
-        "username": "Bret",</br>
-        "email": "Sincere@april.biz"</br>
-    }</code>,</br> userObj,</br> ......</br>]</td>
-    <td>TODO</td>
-  </tr>
-
-  <tr>
-    <td>GET</td>
-    <td>/api/users/:id</td>
-    <td>get a user of the id</td>
-     <td><code>{
-        "user_id": 1,</br>
-        "name": "Leanne Graham",</br>
-        "username": "Bret",</br>
-        "email": "Sincere@april.biz"</br>
-    }</code> </td>
-    <td>urlParam id of type int</td>
-  </tr>
-
-  <tr>
-    <td>POST</td>
-    <td>/api/users/</td>
-    <td>add a new user</br>
-    Take a look at userSchema in alpome_backend\models\user.js for more details
-      <ul>
-        <li>usernames must be unique in the system </li>
-        <li>username is required</li>
-        <li>minimum length is 4 characters; no whitespaces</li>
-        <li></li>
-      </ul>
-    </td>
-    <td><code>{
-        "user_id": 1,</br>
-        "name": "Leanne Graham",</br>
-        "username": "Bret",</br>
-        "email": "Sincere@april.biz"</br>
-    }</code> </td>
-    <td>
-    When you create user, send this type of object
-    {</br>
-    "username": "testUser2",</br>
-    "password": "jonSnow",</br>
-    "email": "testUser2@testme.com"</br>
-}</br>
-    </td>
-  </tr>
-
-  <tr>
+ <table id="my-table">
+    <tr>
+      <th>Verb</th>
+      <th>Endpoint</th>
+      <th>Info</th>
+      <th>Example Response</th>
+      <th>Request Params</th>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td>/api/users</td>
+      <td>get all users</td>
+      <td>[</br>userObj, </br>
+        <code>{
+              "user_id": 1,</br>
+              "name": "Leanne Graham",</br>
+              "username": "Bret",</br>
+              "email": "Sincere@april.biz"</br>
+          }
+        </code>,</br> userObj,</br> ......</br>]</td>
+      <td>TODO</td>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td>/api/users/:id</td>
+      <td>get a user of the id</td>
+      <td>
+        <code>{
+          "user_id": 1,</br>
+          "name": "Leanne Graham",</br>
+          "username": "Bret",</br>
+          "email": "Sincere@april.biz"</br>
+      }
+    </code> </td>
+      <td>urlParam id of type int</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/api/users/</td>
+      <td>add a new user</br>
+        Take a look at userSchema in alpome_backend\models\user.js for more details
+        <ul>
+          <li>usernames must be unique in the system </li>
+          <li>username is required</li>
+          <li>minimum length is 4 characters; no whitespaces</li>
+          <li></li>
+        </ul>
+      </td>
+      <td>
+        <code>{</br>
+          "own_units": [],</br>
+          "units_with_access": [],</br>
+          "email": "testUser2@testme.com",</br>
+          "username": "testUser2",</br>
+          "user_id": "5fabcbb640abcf3cf0956f31"</br>
+      }</code> </td>
+      <td>
+        When you create user, send this type of object</br>
+        <code>
+          {</br>
+          "username": "testUser2",</br>
+          "password": "jonSnow",</br>
+          "email": "testUser2@testme.com"</br>
+          }</br>
+        </code></td>
+    </tr>
+    <tr>
       <td>PUT</td>
       <td>/api/users/:id</td>
       <td>update a user TODO : not added yet</td>
       <td>TODO : the new object </td>
       <td>urlParam id of type int</td>
-  </tr>
-  
-</table>
+    </tr>
+
+  </table>
 
 
 <h2>Growing Units</h2>
 <h3>/api/growing_unit</h3>
 
-<table>
+<table id="my-table">
   <tr>
     <th>Verb</th>
     <th>Endpoint</th>
