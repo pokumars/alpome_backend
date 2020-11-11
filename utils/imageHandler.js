@@ -50,7 +50,7 @@ const uploadParams = (request) => {
 
 /**
  * 
- * @param {[S3Keys]} itemKeysToDelete - keys of the item to delete
+ * @param {S3Keys[]} itemKeysToDelete - keys of the item to delete
  * @param {*} response - Response of the router request
  */
 const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
@@ -60,13 +60,13 @@ const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
       Objects: itemKeysToDelete.map(x => Object.assign({}, {Key: x}))
     }
   };
-  logger.info(deleteParams);
+  logger.info('deleteParams from deleteGrowingUnitImagesFromS3 -----',deleteParams);
   S3.deleteObjects(deleteParams, (error, data) => {
     if (error) {
       logger.error(error);
       return response.status(500).send({error: error});
     } else {
-      logger.info(data);
+      logger.info('success data from S3.deleteObjects ------', data);
       return data;
     }
   });

@@ -1,6 +1,6 @@
 const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
-const { multerUploadOptions, S3, uploadParams } = require('../utils/imageHandler');
+const { multerUploadOptions, S3, uploadParams, deleteGrowingUnitImagesFromS3 } = require('../utils/imageHandler');
 const GrowingUnit = require('../models/growing_unit');
 const User = require('../models/user');
 
@@ -43,7 +43,7 @@ growingUnitsRouter.get('/:id', async (request, response, next) => {
 
 //  /api/growing_unit/:id
 growingUnitsRouter.delete('/:id',async (request, response, next) => {
-  
+
   try {
     /*Don't just delete because you got a request to delete. Some checks need to be
     done. The user submitting the delete request has to for example be the owner of
@@ -52,9 +52,13 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     
     //TODO: add user token mechanism
     //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.   
-
+    //TODO: Delete the images too
     //find the unit
     const unitToDelete = await GrowingUnit.findById(request.params.id);
+    //make a list of all the image keys of that unit
+    const allTheUnitImageKeys = unitToDelete.images.map(img => img.Key);
+    console.log('allTheUnitImageKeys-------', allTheUnitImageKeys);
+
     //find the owner
     const ownerOfUnit = await User.findById(unitToDelete.owner);
 
@@ -65,8 +69,11 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     const updatedUser = await ownerOfUnit.save();
     if(updatedUser){//if able to remove from user's list of units,
       //delete the growing unit
-      const deletedUnit =await GrowingUnit.findByIdAndDelete(request.params.id);
+      const deletedUnit = await GrowingUnit.findByIdAndDelete(request.params.id);
       logger.info('deletedUnit -------',deletedUnit);
+
+      //delete its images if there are any
+      if(unitToDelete.images.length > 0 ) {logger.info(deleteGrowingUnitImagesFromS3(allTheUnitImageKeys, response));}
       return response.status(204).end();
 
     }else{//else nothing is changed or deleted AT ALL

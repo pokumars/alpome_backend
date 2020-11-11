@@ -50,7 +50,8 @@ usersRouter.delete('/:id',async (request, response, next) => {
   try {
     const user = await User.findById(id,  { username: 1, own_units:1});
     if(!user) return response.status(204);//204 doesnt send any message with it
-
+    
+    //find all thegrowing units in user.own_units by id
     const theUsersGrowingUnits = await GrowingUnit.find({_id:{
       $in: [...user.own_units]
     }});
