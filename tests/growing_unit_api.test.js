@@ -17,6 +17,7 @@ test('', async () => {
 
 describe('Tests that dont need a beforeEach', () => {
   beforeAll(async () => {
+    
     //TODO: delete growing unit images too when u delete a growing unit 
     await GrowingUnit.deleteMany({});
   
@@ -35,12 +36,22 @@ describe('Tests that dont need a beforeEach', () => {
       .field('data_source', 'null')
       .field('stream_url', 'someshite.smth')
       .field('owner', '5fa695a9b3f5a101307ebecf')
-      .attach('image',imagePath);
+      .attach('image',imageFile);
+
+    await api.post('/api/growing_unit')
+      .field('common_names', 'tree 2')
+      .field('nickname', 'tree nickname2')
+      .field('location', 'Grandma\'s place f')
+      .field('shared_access', '[]')
+      .field('supragarden', 'false')
+      .field('last_watered', 'null')
+      .field('watering_frequency', '432000000')
+      .field('data_source', 'null')
+      .field('stream_url', 'someshite.smth')
+      .field('owner', '5fa695a9b3f5a101307ebecf');
       
-      
-  
-    let growingUnitObject = new GrowingUnit(initialGrowingUnits[1]);
-    await growingUnitObject.save();
+    /*let growingUnitObject = new GrowingUnit(initialGrowingUnits[1]);
+    await growingUnitObject.save();*/
   });
 
   test('growing units are returned as json', async () => {
@@ -56,12 +67,12 @@ describe('Tests that dont need a beforeEach', () => {
     expect(response.body.length).toBe(initialGrowingUnits.length);
   });
 
-  test('first growing unit should have nickname - no image tree 1', async () => {
+  test('first growing unit should have specific nicknames', async () => {
     const response  = await api.get('/api/growing_unit');
     const nickNames = response.body.map(g => g.nickname);
 
     expect(nickNames).toContain('tree nickname1');
-    expect(nickNames).toContain('no image tree 1');
+    expect(nickNames).toContain('tree nickname2');
   });
 
   test('upload unit with a non-existent user - should not add unit, not add image either should return with certain code and certain error message ', async () => {
@@ -80,7 +91,7 @@ describe('Tests that dont need a beforeEach', () => {
       .expect(400);
 
       
-      //Todo: check that there is only one image in the bucket?? or not since that is our test bucket for all projects
+    //Todo: check that there is only one image in the bucket?? or not since that is our test bucket for all projects
 
     expect(postResponse.body.error).toContain('User does not exist. So Could not save the growing unit. Check user id (aka owner in request body)');
 
@@ -109,8 +120,13 @@ afterAll(() => {
 
 //USER TESTS
 //TEST: Add user - should return user of the same username and email and also a user id.
-//TEST: change password - should have changed password. use new password to login and see if that it grants user token
 //TEST:login should grant user token
+//TEST:login should grant user token and userObj. userObj contains- array of their units by id, array of units they have access to by id, email, username, userId
+//TEST:The logged-in user now has all their units and can fetch by id. that fetch should give all details about all units
+//TEST: change password - should have changed password. use new password to login and see if that it grants user token
+
 //TEST: delete a user - user should no longer exist
 //TEST: delete a user - user should no longer exist nor their growing units, nor their growing unit's images
-//TEST:
+//TEST: //TODO: delete growing unit from user when it is deleted  
+
+
