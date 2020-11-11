@@ -121,7 +121,14 @@ Ask me for them
         "username": "Bret",</br>
         "email": "Sincere@april.biz"</br>
     }</code> </td>
-    <td></td>
+    <td>
+    When you create user, send this type of object
+    {</br>
+    "username": "testUser2",</br>
+    "password": "jonSnow",</br>
+    "email": "testUser2@testme.com"</br>
+}</br>
+    </td>
   </tr>
 
   <tr>
