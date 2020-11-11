@@ -43,6 +43,7 @@ growingUnitsRouter.get('/:id', async (request, response, next) => {
 
 //  /api/growing_unit/:id
 growingUnitsRouter.delete('/:id',async (request, response, next) => {
+  
   try {
     /*Don't just delete because you got a request to delete. Some checks need to be
     done. The user submitting the delete request has to for example be the owner of
@@ -50,21 +51,30 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     have a user token that says they are logged in etc. */
     
     //TODO: add user token mechanism
-    //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.
-    //TODO: if a unit is deleted, it should be removed from the user's list of units too
-    
+    //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.   
 
-    const unitToDelete = await GrowingUnit
-      .findByIdAndDelete(request.params.id);
-    if(unitToDelete) {
-      response.status(204);
-    } else {
-      logger.error('growingUnit does not exist--');
-      response.status(204).json({
-        error: 'growingUnit does not exist'
-      });
+    //find the unit
+    const unitToDelete = await GrowingUnit.findById(request.params.id);
+    //find the owner
+    const ownerOfUnit = await User.findById(unitToDelete.owner);
+
+    //remove the unit to be deleted from the owner's list of units
+    ownerOfUnit.own_units = ownerOfUnit.own_units.filter((id) => id.toString() !== request.params.id);
+
+    //save the updated unit
+    const updatedUser = await ownerOfUnit.save();
+    if(updatedUser){//if able to remove from user's list of units,
+      //delete the growing unit
+      const deletedUnit =await GrowingUnit.findByIdAndDelete(request.params.id);
+      logger.info('deletedUnit -------',deletedUnit);
+      return response.status(204).end();
+
+    }else{//else nothing is changed or deleted AT ALL
+      const couldntUpdateUser =`There was an error updating the user object so unit was not deleted.
+      Possibly there was no such user`;
+      logger.error(couldntUpdateUser);
+      return response.status(500).send({error: couldntUpdateUser});
     }
-
   } catch (error) {
     next(error);
   }

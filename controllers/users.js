@@ -20,9 +20,12 @@ usersRouter.get('/', async (request, response, next) => {
 
 // /api/users/:id Get a single user by id
 usersRouter.get('/:id', async (request, response, next) => {
+  //TODO: verify the user is the correct one
+  //TODO:The logged-in user now has all their units and can fetch by id. that fetch should give all details about all units
+
   const id = request.params.id;
   try {      
-    const user = await User.findById(id).populate('own_units', populatedGrowingUnitFields);
+    const user = await User.findById(id).populate('own_units');
     logger.info(user);
 
     if (user) {
