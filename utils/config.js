@@ -10,6 +10,10 @@ if (process.env.NODE_ENV === 'test') {
 if (process.env.NODE_ENV === 'development') {
   MONGODB_URI = process.env.MONGO_DB_TRIAL_URI;
 }
+if (process.env.NODE_ENV === 'foranna') {
+  MONGODB_URI = process.env.MONGO_DB_ANNA;
+}
+
 
 let AWS_ID = process.env.AWS_ID;
 let AWS_SECRET = process.env.AWS_SECRET;
