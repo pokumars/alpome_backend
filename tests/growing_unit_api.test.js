@@ -274,12 +274,13 @@ afterAll(() => {
 
 //GROWING UNIT TESTS
 
-//TEST: update growing unit image should come with the updated object with one more image
-//TEST: delete a growing unit should only work with a user token
-//TEST: post a growing unit should not work without a user token
+//TEST: (not urgent) post a growing unit should not work without a user token
 //TEST: delete image of a growing unit - should return growing unit without that image; + image deleted from S3
-//TEST: delete growing unit - unit no longer in db, unit images no longer in S3
-//TEST: add new image to growing unit- return growing unit with 1 more image and image in S3
+//TEST: (not tested but done) delete growing unit should delete the unit images in S3
+//TEST: (not tested but done)  add new image to growing unit- return growing unit with 1 more image and image in S3
+//TEST: (not tested but done) update growing unit image should come with the updated object with one more image
+
+
 
 //TEST:
 

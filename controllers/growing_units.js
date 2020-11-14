@@ -91,7 +91,7 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
       const unitToDelete = verificationReturnObj.growingUnit;
       //make a list of all the image keys of that unit
       const allTheUnitImageKeys = unitToDelete.images.map(img => img.Key);
-      console.log('allTheUnitImageKeys-------', allTheUnitImageKeys);
+      logger.info('allTheUnitImageKeys-------', allTheUnitImageKeys);
 
       //find the owner
       const ownerOfUnit = verificationReturnObj.user;
@@ -128,8 +128,32 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
 });
 
 //delete a unit's image
-growingUnitsRouter.delete('unitimage/:id',(request, response, next) => {
+growingUnitsRouter.delete('/unitimage/:id',async (request, response, next) => {
   //TODO: delete a unit's image
+  const body = request.body;
+  
+
+  console.log(body);
+  try {
+    const verificationReturnObj = await verifyPermission(request);
+
+    //is request sender the owner
+    if(verificationReturnObj.isRequestSenderTheOwner){
+      const growingUnit = verificationReturnObj.growingUnit;
+
+      logger.info(deleteGrowingUnitImagesFromS3([body.fileName], response));
+
+      //remove image from growing unit obj
+      growingUnit.images = growingUnit.images.filter(imgObj => imgObj.filename !==body.filename);
+      const updatedGrowingUnit = await growingUnit.save();
+
+      return response.status(200).send(updatedGrowingUnit.toJSON());
+    }else {
+      response.status(401).json({error: 'You dont have the right permissions to update this unit'});
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
 // /api/growing_unit
