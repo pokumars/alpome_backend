@@ -15,17 +15,21 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(middleware.getTokenFrom);
-//morgan logs any incoming request. The array below is  how we want it to log the details
-app.use(morgan((tokens, req, res) => {
-  return[
-    tokens.method(req, res),
-    tokens.url(req, res),
-    tokens.status(req, res),
-    tokens.res(req, res, 'content-length'), '-',
-    tokens['response-time'](req, res), 'ms',
-    currentLocalDateTime(),
-  ].join(' ');
-}));
+
+
+if (process.env.NODE_ENV !== 'test'){
+  //morgan logs any incoming request. The array below is  how we want it to log the details
+  app.use(morgan((tokens, req, res) => {
+    return[
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms',
+      currentLocalDateTime(),
+    ].join(' ');
+  }));
+}
 
 const dbUri = config.MONGODB_URI;
 logger.info('connecting to MongoDB');
