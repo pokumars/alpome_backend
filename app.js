@@ -7,12 +7,14 @@ const loginRouter = require('./controllers/login');
 const logger = require('./utils/logger');
 const config = require('./utils/config');
 const mongoose = require('mongoose');
+const middleware = require('./utils/middleware');
 const currentLocalDateTime = require('./utils/helperFunctions').currentLocalDateTime;
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(middleware.getTokenFrom);
 //morgan logs any incoming request. The array below is  how we want it to log the details
 app.use(morgan((tokens, req, res) => {
   return[
@@ -49,25 +51,7 @@ app.get('/', (request, response) => {
   `);
 });
 
-
-const errorHandler= (error, request, response, next) => {
-  logger.error(error);
-
-  if(error.name==='CastError' && error.kind === 'ObjectId'){
-    return response.status(400).send({ error: 'malformatted id' });
-  }
-  else if(error.name === 'ValidationError'){
-    return response.status(400).json({ error: error.message });
-  } else if( error.name === 'JsonWebTokenError'){
-    return response.status(401).json({
-      error: 'invalid token'
-    });
-  }
-
-  next(error);
-};
-
-app.use(errorHandler);
+app.use(middleware.errorHandler);
 
 module.exports = app;
 

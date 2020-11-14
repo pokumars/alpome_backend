@@ -1,9 +1,40 @@
 const growingUnitsRouter = require('express').Router();
 const logger = require('../utils/logger');
 const { multerUploadOptions, S3, uploadParams, deleteGrowingUnitImagesFromS3 } = require('../utils/imageHandler');
+const jwt = require('jsonwebtoken');
 const GrowingUnit = require('../models/growing_unit');
 const User = require('../models/user');
 
+/**
+ * 
+ * @typedef {Obect} UnitUserLink
+ * @property {Object} growingUnit - The growingUnit to be acted upon
+ * @property {Object} decodedToken - The decodedToken object. it gives fields username, id and iat
+ * @property {Object} user - Raw user object. not .toJSOn. expect _id instead of id
+ * @property {string} unitId - The unitId
+ * @property {Boolean} isRequestSenderTheOwner - is the sender of the request the owner. if true they can act on it
+ */
+/**
+ * 
+ * @param {*} request 
+ * @return {Object}  {@link UnitUserLink} growingUnit:Obj, decodedToken: Obj, user:Obj, unitId:string, isRequestSenderTheOwner:Bool
+ */
+const verifyPermission = async (request) => {
+  const unitId = request.params.id;
+  const token = request.token;
+  const decodedToken = jwt.verify(token, process.env.SECRET);
+
+  const growingUnit =await GrowingUnit.findById(unitId);
+  const user = await User.findById(decodedToken.id);
+
+
+  //Is the sender of the request the owner of the unit. Only owner should be able to update.
+  
+  return {
+    growingUnit, decodedToken, user, unitId,
+    isRequestSenderTheOwner: growingUnit.owner.toString() === user._id.toString()
+  };
+};
 
 
 //get all growing units
@@ -63,7 +94,9 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     const ownerOfUnit = await User.findById(unitToDelete.owner);
 
     //remove the unit to be deleted from the owner's list of units
-    ownerOfUnit.own_units = ownerOfUnit.own_units.filter((id) => id.toString() !== request.params.id);
+    const newListOfUnits = ownerOfUnit.own_units.filter((id) => id.toString() !== request.params.id);
+    logger.info(newListOfUnits);
+    ownerOfUnit.own_units = newListOfUnits;
 
     //save the updated unit
     const updatedUser = await ownerOfUnit.save();
@@ -87,13 +120,19 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
   }
 });
 
-// /api/growing_unit
-growingUnitsRouter.put('/:id', async (request, response, next) => {
+//delete a unit's image
+growingUnitsRouter.delete('unitimage/:id',(request, response, next) => {
+  //TODO: delete a unit's image
+});
+
+//add a new image to a unit
+growingUnitsRouter.post('unitimage/:id',(request, response, next) => {
+  //TODO:
   /*Don't just update because you got a request to update. Some checks need to be
     done. The user submitting the update request has to for example be the owner of
    the growing unit before they can update a unit. They have to be logged in and 
     have a user token that says they are logged in etc. */
-  const unitId = request.params.id;
+
   //there is an Image, then it should be uploaded and added to the object
   if (request.file){//TODO
     logger.info('There is an image file ',request.file);
@@ -118,26 +157,42 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
   };
   growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;*/
   }
+});
 
+// /api/growing_unit
+growingUnitsRouter.put('/:id', async (request, response, next) => {
+  //all updates to a growing unit except adding of new image
   try {
-    const replacement = request.body;
-    const updatedUnit = await GrowingUnit
-      .findByIdAndUpdate(unitId, replacement, { new: true });
+    const verificationReturnObj = await verifyPermission(request);
+    
 
-    if (updatedUnit) {
-      //logger.info(updatedUnit);
-      response.json(updatedUnit.toJSON());
-    } else {
-      logger.error('some error updating growing unit of id ', unitId);
-      response.json({
-        error: 'Could not find unit to update'
-      });
+    //Is the sender of the request the owner of the unit. Only owner should be able to update.
+    if(verificationReturnObj.isRequestSenderTheOwner){
+      
+      logger.info('PUT request.body---------------------',request.body);
+      const replacement =  Object.assign(verificationReturnObj.growingUnit , request.body);
+  
+      const updatedUnit = await GrowingUnit
+        .findByIdAndUpdate(verificationReturnObj.unitId, replacement, { new: true });
+      
+      if (updatedUnit) {
+        //logger.info(updatedUnit);
+        response.json(updatedUnit.toJSON());
+      } else {
+        logger.error('some error updating growing unit of id ', verificationReturnObj.unitId);
+        response.json({
+          error: 'Could not find unit to update'
+        });
+      }
+    }else {
+      response.status(401).json({error: 'You dont have the right permissions to update this unit'});
     }
   } catch (error) {
     next(error);
     response.status(400);
   }
 });
+
 
 const saveGrowingUnit = (unitToSave, next) => {
   //uploadedGrowingUnit is the object mongodb returns to us after it confirms having received it.
@@ -179,7 +234,6 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
     return;
   }
 };
-
 
 // /api/growing_unit
 growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next) => {

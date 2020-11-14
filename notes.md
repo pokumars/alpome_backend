@@ -154,14 +154,14 @@ Ask me for them
     <th>Endpoint</th>
     <th>Info</th>
     <th>Example Response</th>
-    <th>Params</th>
+    <th>request Params</th>
   </tr>
   <tr>
     <td>GET</td>
     <td>/api/growing_unit</td>
     <td>get all growing units</td>
     <td>TODO - it is an array of growing units... refer to the response of GET a single frowing unit</td>
-    <td>TODO</td>
+    <td>send user token in the header</td>
   </tr>
   <tr>
     <td>GET</td>
@@ -217,15 +217,18 @@ Ask me for them
     ],</br>
     "unit_id": "5f9bbd88c6647153ec25826a"</br>
     }</code> </td>
-    <td></td>
+    <td>required- send user token in the header <br></td>
   </tr>
     <tr>
     <td>PUT</td>
     <td>/api/growing_unit/:id</td>
     <td>update a growing unit TODO : not added yet</td>
     <td>TODO : the new object - it will return the object with the applied updates</td>
-    <td>urlParam id of type int <br>
-    You also need to pass the updated growing unit as the request body. or at least the fields to update</td>
+    <td>required- urlParam id of type int <br>
+      required- send user token in the header <br>
+      required-You also need to pass the updated growing unit as the request body. <br>
+      If the field to update is an array,please fill the array withthe old stuff and add the newer stuff so that the array you send to the backend represents the update you want. The only exception is adding a new image to the a growing unit; for that, I will make a url specifically for that
+    </td>
   </tr>
   
 </table>
