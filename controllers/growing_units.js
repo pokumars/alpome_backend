@@ -80,40 +80,47 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
     done. The user submitting the delete request has to for example be the owner of
    the growing unit before they can delete a unit. They have to be logged in and 
     have a user token that says they are logged in etc. */
-    
+    const verificationReturnObj = await verifyPermission(request);
     //TODO: add user token mechanism
     //TODO: check if delete request is coming from right user. Check fullstackOpen\p4BlogList\controllers\blogs.js for example.   
     //TODO: Delete the images too
-    //find the unit
-    const unitToDelete = await GrowingUnit.findById(request.params.id);
-    //make a list of all the image keys of that unit
-    const allTheUnitImageKeys = unitToDelete.images.map(img => img.Key);
-    console.log('allTheUnitImageKeys-------', allTheUnitImageKeys);
+    
+    //the user is the owner of the unit
+    if(verificationReturnObj.isRequestSenderTheOwner){
+      //find the unit
+      const unitToDelete = verificationReturnObj.growingUnit;
+      //make a list of all the image keys of that unit
+      const allTheUnitImageKeys = unitToDelete.images.map(img => img.Key);
+      console.log('allTheUnitImageKeys-------', allTheUnitImageKeys);
 
-    //find the owner
-    const ownerOfUnit = await User.findById(unitToDelete.owner);
+      //find the owner
+      const ownerOfUnit = verificationReturnObj.user;
 
-    //remove the unit to be deleted from the owner's list of units
-    const newListOfUnits = ownerOfUnit.own_units.filter((id) => id.toString() !== request.params.id);
-    logger.info(newListOfUnits);
-    ownerOfUnit.own_units = newListOfUnits;
+      //remove the unit to be deleted from the owner's list of units
+      const newListOfUnits = ownerOfUnit.own_units.filter((id) => id.toString() !== request.params.id);
+      logger.info(newListOfUnits);
+      ownerOfUnit.own_units = newListOfUnits;
 
-    //save the updated unit
-    const updatedUser = await ownerOfUnit.save();
-    if(updatedUser){//if able to remove from user's list of units,
+      //save the updated user object
+      const updatedUser = await ownerOfUnit.save();
+      if(updatedUser){//if able to remove from user's list of units,
       //delete the growing unit
-      const deletedUnit = await GrowingUnit.findByIdAndDelete(request.params.id);
-      logger.info('deletedUnit -------',deletedUnit);
+        const deletedUnit = await GrowingUnit.findByIdAndDelete(request.params.id);
+        logger.info('deletedUnit -------',deletedUnit);
 
-      //delete its images if there are any
-      if(unitToDelete.images.length > 0 ) {logger.info(deleteGrowingUnitImagesFromS3(allTheUnitImageKeys, response));}
-      return response.status(204).end();
+        //delete its images if there are any
+        if(unitToDelete.images.length > 0 ) {logger.info(deleteGrowingUnitImagesFromS3(allTheUnitImageKeys, response));}
+        return response.status(204).end();
 
-    }else{//else nothing is changed or deleted AT ALL
-      const couldntUpdateUser =`There was an error updating the user object so unit was not deleted.
-      Possibly there was no such user`;
-      logger.error(couldntUpdateUser);
-      return response.status(500).send({error: couldntUpdateUser});
+      }else{//else nothing is changed or deleted AT ALL
+        const couldntUpdateUser =`There was an error updating the user object so unit was not deleted.
+        Possibly there was no such user or the user does not have the right permissions on this unit`;
+        logger.error(couldntUpdateUser);
+        return response.status(500).send({error: couldntUpdateUser});
+      }
+    }
+    else{//if not correct token
+      response.status(401).json({error: 'You dont have the right permissions to update this unit'});
     }
   } catch (error) {
     next(error);
@@ -123,40 +130,6 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
 //delete a unit's image
 growingUnitsRouter.delete('unitimage/:id',(request, response, next) => {
   //TODO: delete a unit's image
-});
-
-//add a new image to a unit
-growingUnitsRouter.post('unitimage/:id',(request, response, next) => {
-  //TODO:
-  /*Don't just update because you got a request to update. Some checks need to be
-    done. The user submitting the update request has to for example be the owner of
-   the growing unit before they can update a unit. They have to be logged in and 
-    have a user token that says they are logged in etc. */
-
-  //there is an Image, then it should be uploaded and added to the object
-  if (request.file){//TODO
-    logger.info('There is an image file ',request.file);
-    //upload image
-
-    //get image details
-
-    /*create image object like this
-    {
-        "fileName": "example.png",
-        "image_url": "https://ohe-test-image-upload-1.s3.eu-central-1.amazonaws.com/ad0fe675-905e-4881-8a88-5125be7b11ee.png",
-        "date_uploaded": "2020-10-30T07:15:20.288Z"
-    }
-    and append to growingUnit before adding to db
-  */
-
-
-  /*const imageToAddToGrowingUnitObject = {
-    'fileName': s3response.key,
-    'image_url': s3response.Location,
-    'date_uploaded': Date.now()
-  };
-  growingUnitTemporaryObject.images = imageToAddToGrowingUnitObject;*/
-  }
 });
 
 // /api/growing_unit
@@ -235,6 +208,54 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
   }
 };
 
+//add a new image to a unit
+growingUnitsRouter.post('unitimage/:id', multerUploadOptions, (request, response, next) => {
+  try {
+    const verificationReturnObj = await verifyPermission(request);
+
+    //there is an Image, then it should be uploaded and added to the unit
+    if (request.file){
+      //find the growing unit that is getting an image 
+      const unitToUpdate = verificationReturnObj.growingUnit
+
+      logger.info('There is an image file ',/*request.file */);
+      //upload image
+      S3.upload(uploadParams(request), async (error, data) => {
+        if(error){
+          logger.error(error);
+          response.status(500).send(error);
+          return error;
+        }
+
+         /*When successful the response returned by S3 aka 'data' is
+        { ETag: '"13d18b81cc70cd3bea6b7ea60e504373"',
+          Location:'https://[BucketName].s3.amazonaws.com/[objectName.filetype]',
+          key: 'example.png',
+          Key: 'example.png',
+          Bucket: '[BucketName]' 
+        }*/
+
+        //get saved image details and create image object
+        const imageToAddToGrowingUnitObject = {
+          'fileName': data.key,
+          'Key': data.Key,
+          'image_url': data.Location,
+          'date_uploaded': Date.now()
+        };
+
+        unitToUpdate.images = unitToUpdate.images.concat(imageToAddToGrowingUnitObject)
+        const updatedUnit = await unitToUpdate.save();
+        logger.info('-------------------------unit that has been updated ', updatedUnit);
+        //and append to growingUnit before adding to db
+        response.status(201).send(updatedUnit.toJSON())
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 // /api/growing_unit
 growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next) => {
   const body = request.body;
@@ -279,8 +300,8 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
     if (request.file){
 
       //TODO: check whether the one uploading is the right user to upload
-      logger.info('There is an image file ',request.file);
-      console.log('There is an image file ',request.file);
+      logger.info('There is an image file ******************',/*request.file*/);
+      //console.log('There is an image file ',request.file);
 
       //upload image
       S3.upload(uploadParams(request), async (error, data) => {
