@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
-const { initialGrowingUnits, imageFile, imagePath } = require('./testHelper');
+const helper = require('./testHelper');
 const GrowingUnit = require('../models/growing_unit');
-
+const User = require('../models/user');
+//delete all users except await User.deleteMany({ _id: { $ne: '5fa695a9b3f5a101307ebecf' }});
 
 
 const api = supertest(app);
@@ -20,6 +21,8 @@ describe('Tests that dont need a beforeEach', () => {
     
     //TODO: delete growing unit images too when u delete a growing unit 
     await GrowingUnit.deleteMany({});
+    await User.deleteMany({ _id: { $ne: '5fa695a9b3f5a101307ebecf' }});
+
   
     /*let growingUnitObject = new GrowingUnit(initialGrowingUnits[0]);
     await growingUnitObject.save();*/
@@ -36,7 +39,7 @@ describe('Tests that dont need a beforeEach', () => {
       .field('data_source', 'null')
       .field('stream_url', 'someshite.smth')
       .field('owner', '5fa695a9b3f5a101307ebecf')
-      .attach('image',imageFile);
+      //.attach('image', helper.imageFile);
 
     await api.post('/api/growing_unit')
       .field('common_names', 'tree 2')
@@ -50,6 +53,7 @@ describe('Tests that dont need a beforeEach', () => {
       .field('stream_url', 'someshite.smth')
       .field('owner', '5fa695a9b3f5a101307ebecf');
       
+      
     /*let growingUnitObject = new GrowingUnit(initialGrowingUnits[1]);
     await growingUnitObject.save();*/
   });
@@ -61,13 +65,14 @@ describe('Tests that dont need a beforeEach', () => {
       .expect('Content-Type', /application\/json/);
   });
 
-  test('should have as many growing units as the initialGrowingUnits', async () => {
+
+  test.skip('should have as many growing units as the initialGrowingUnits', async () => {
     const response  = await api.get('/api/growing_unit');
 
-    expect(response.body.length).toBe(initialGrowingUnits.length);
+    expect(response.body.length).toBe(helper.initialGrowingUnits.length);
   });
 
-  test('first growing unit should have specific nicknames', async () => {
+  test.skip('first growing unit should have specific nicknames', async () => {
     const response  = await api.get('/api/growing_unit');
     const nickNames = response.body.map(g => g.nickname);
 
@@ -75,7 +80,7 @@ describe('Tests that dont need a beforeEach', () => {
     expect(nickNames).toContain('tree nickname2');
   });
 
-  test('upload unit with a non-existent user - should not add unit, not add image either should return with certain code and certain error message ', async () => {
+  test.skip('upload unit with a non-existent user - should not add unit, not add image either should return with certain code and certain error message ', async () => {
     const postResponse = await api.post('/api/growing_unit')
       .field('common_names', 'non existent user unit')
       .field('nickname', 'tree nonExUsr')
@@ -87,7 +92,7 @@ describe('Tests that dont need a beforeEach', () => {
       .field('data_source', 'null')
       .field('stream_url', 'someshite.smth')
       .field('owner', '5fa695a9b3f5a101307ebe4a')
-      .attach('image',imagePath)
+      .attach('image',helper.imagePath)
       .expect(400);
 
       
@@ -97,10 +102,121 @@ describe('Tests that dont need a beforeEach', () => {
 
     const response  = await api.get('/api/growing_unit');
 
-    expect(response.body.length).toBe(initialGrowingUnits.length);
+    expect(response.body.length).toBe(helper.initialGrowingUnits.length);
 
   });
   
+  test.skip('update growing unit should return the updated object', async () => {
+    //find a unit by id
+    const unitToTestId  = await api.get('/api/growing_unit');
+    //console.log('-------unitToTestId.body', unitToTestId.body);
+    //console.log( '-------unit to test id', unitToTestId.body[0].unit_id );
+    const id = unitToTestId.body[0].unit_id;
+    
+    //update two or 3 factors
+    await api.put(`/api/growing_unit/${id}`)
+      .set('Content-Type', 'application/json')
+      .send(`{"nickname":"${helper.anUpdatedUnit.nickname}", "location":"${helper.anUpdatedUnit.location}"}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    
+
+    //check they are updated
+    const theUpdatedObjectInDb = await GrowingUnit.findById(id);
+    //console.log('theUpdatedObjectInDb',theUpdatedObjectInDb);
+    //console.log('theUpdatedObjectInDb.location', theUpdatedObjectInDb.location);
+
+    expect(theUpdatedObjectInDb.location).toBe(helper.anUpdatedUnit.location);
+    expect(theUpdatedObjectInDb.nickname).toBe(helper.anUpdatedUnit.nickname);
+  });
+  
+  test('update a growing unit should work with a user token', async () => {
+    //create user
+    const newUser = await api.post('/api/users')
+      .send(helper.testUserForGrowingUnitTests);
+    //console.log('-----newUser-------------',newUser.body);
+
+    //post a unit for that user
+    //console.log('-----newUser.body.user_id------------',newUser.body.user_id);
+    const unitToPost = {
+      'nickname': 'did token succeed?',
+      'common_names': [
+        'did token succeed?'
+      ],
+      'shared_access': [],
+      'location': 'did token succeed?',
+      'supragarden': false,
+      'last_watered': null,
+      'watering_frequency': 432000000,
+      'data_source': null,
+      'stream_url': 'didTokenSucceed.smth',
+      'owner': newUser.body.user_id
+    };
+    const postedUnit = await api.post('/api/growing_unit').send(unitToPost);
+    const postedUnitId = postedUnit.body.unit_id;
+
+
+    //login and get token
+    const user = await api.post('/api/login')
+      .send({ 'username': helper.testUserForGrowingUnitTests.username , 'password': helper.testUserForGrowingUnitTests.password })
+      .expect(200);
+    const token = user.body.token;
+    //console.log('-----login response-------------',user);
+    //console.log('-----user.token being sent-------------',user.body.token);
+
+
+    //update two or 3 factors
+    const stringThatFieldsShouldBecome = 'Token thing succeeded';
+    await api.put(`/api/growing_unit/${postedUnitId}`)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `bearer ${token}`)
+      .send(`{"nickname":"${stringThatFieldsShouldBecome}", "location":"${stringThatFieldsShouldBecome}"}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    //check they are updated
+    const theUpdatedObjectInDb = await GrowingUnit.findById(postedUnitId);
+    //console.log('-----theUpdatedObjectInDb-------------',theUpdatedObjectInDb);
+
+    expect(theUpdatedObjectInDb.location).toBe(stringThatFieldsShouldBecome);
+    expect(theUpdatedObjectInDb.nickname).toBe(stringThatFieldsShouldBecome);
+  });
+
+  test('update a growing unit should not work without a user token', async () => {
+    
+    //login and get token
+    const user = await api.post('/api/login')
+      .send({ 'username': helper.testUserForGrowingUnitTests.username , 'password': helper.testUserForGrowingUnitTests.password })
+      .expect(200);
+    const token = user.body.token;
+
+    //that user will only have one unit at this point
+    const postedUnitId = user.body.user.own_units[0];
+
+    //update two or 3 factors
+    const expectedString = 'Token thing succeeded';//in the previous test the test it was updated to 'Token thing succeeded'
+
+    //update two or 3 factors
+    const auba = 'Aubameyang', kroosHead = 'Toni Kroos head';
+    await api.put(`/api/growing_unit/${postedUnitId}`)
+      .set('Content-Type', 'application/json')
+      //.set('Authorization', `bearer ${token}`)
+      .send(`{"nickname":"${auba}", "location":"${kroosHead}"}`)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+      .then(response => {
+        expect(response.body.error).toBe('invalid token');
+      });
+
+    //check they are updated
+    const theUpdatedObjectInDb = await GrowingUnit.findById(postedUnitId);
+    
+    expect(theUpdatedObjectInDb.location).toBe(expectedString);
+    expect(theUpdatedObjectInDb.nickname).toBe(expectedString);
+    expect(theUpdatedObjectInDb.location).not.toBe(auba);
+    expect(theUpdatedObjectInDb.nickname).not.toBe(kroosHead);
+  });
+
 });
 
 afterAll(() => {
@@ -108,9 +224,11 @@ afterAll(() => {
 });
 
 //GROWING UNIT TESTS
-//TEST: upload unit with a non-existent user should not add unit, not add image either should return with certain code and certain error message
-//TEST: update growing unit should come with the update
+
+//TEST: update growing unit image should come with the updated object with one more image
 //TEST: delete a growing unit should not work without a user token
+//TEST: update a growing unit should not work without a user token
+//TEST: post a growing unit should not work without a user token
 //TEST: delete image of a growing unit - should return growing unit without that image; + image deleted from S3
 //TEST: delete growing unit - unit no longer in db, unit images no longer in S3
 //TEST: add new image to growing unit- return growing unit with 1 more image and image in S3
