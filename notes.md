@@ -230,6 +230,17 @@ Ask me for them
       If the field to update is an array,please fill the array withthe old stuff and add the newer stuff so that the array you send to the backend represents the update you want. The only exception is adding a new image to the a growing unit; for that, I will make a url specifically for that
     </td>
   </tr>
+    
+  <tr>
+    <td>POST</td>
+    <td>/api/growing_unit/unitimage/:id</td>
+    <td>add an image to a growing unit</td>
+    <td>It will return the growing unit object updated with the new image in the images array</td>
+    <td>required- urlParam id of the growing unit you want to add the image to <br>
+      required- send user token in the header.<br>
+      required- image (obviously)
+    </td>
+  </tr>
   
 </table>
 
@@ -238,3 +249,6 @@ TODO:
 
 2. When a user logs in they will get a token that they will need every time they make some request. It verifies
 that they are themselves and they are logged in. I dont have it yet setup so dont worry about it until I do. When I do, all you have to is save it on the pc and then attach it to the request headers (or smth like that).
+
+User token should be added in headers like so 
+'headers': { 'Authorization': 'bearer ey....'}
