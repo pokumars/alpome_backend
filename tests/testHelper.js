@@ -30,6 +30,7 @@ const initialGrowingUnits = [
     'owner': '5fa695a9b3f5a101307ebecf'
   }
 ];
+//const unitsInDB = await GrowingUnit.find({}).toJSON()
 
 const unitsInDb = async () => {
   const users = await GrowingUnit.find({});
@@ -64,5 +65,5 @@ module.exports = {
   unitsInDb,
   usersInDb,
   anUpdatedUnit,
-  testUserForGrowingUnitTests
+  testUserForGrowingUnitTests,
 };

@@ -9,6 +9,22 @@ const User = require('../models/user');
 
 const api = supertest(app);
 
+//login and get token
+const loginAndGetToken = async () => {
+  const user = await api.post('/api/login')
+    .send({ 'username': helper.testUserForGrowingUnitTests.username , 'password': helper.testUserForGrowingUnitTests.password })
+    .expect(200);
+  const token = user.body.token;
+  return {user, token};
+};
+
+const loginMasterAndGetToken = async () => {
+  const user = await api.post('/api/login')
+    .send({ 'username': 'testUser1' , 'password':'jonSnow' })
+    .expect(200);
+  const token = user.body.token;
+  return {user, token};
+};
 /*
 test('', async () => {
   const response  = await api.get('/api/growing_unit')
@@ -38,8 +54,8 @@ describe('Tests that dont need a beforeEach', () => {
       .field('watering_frequency', '432000000')
       .field('data_source', 'null')
       .field('stream_url', 'someshite.smth')
-      .field('owner', '5fa695a9b3f5a101307ebecf')
-      //.attach('image', helper.imageFile);
+      .field('owner', '5fa695a9b3f5a101307ebecf');
+    //.attach('image', helper.imageFile);
 
     await api.post('/api/growing_unit')
       .field('common_names', 'tree 2')
@@ -66,13 +82,13 @@ describe('Tests that dont need a beforeEach', () => {
   });
 
 
-  test.skip('should have as many growing units as the initialGrowingUnits', async () => {
+  test('should have as many growing units as the initialGrowingUnits', async () => {
     const response  = await api.get('/api/growing_unit');
 
     expect(response.body.length).toBe(helper.initialGrowingUnits.length);
   });
 
-  test.skip('first growing unit should have specific nicknames', async () => {
+  test('first growing unit should have specific nicknames', async () => {
     const response  = await api.get('/api/growing_unit');
     const nickNames = response.body.map(g => g.nickname);
 
@@ -80,7 +96,7 @@ describe('Tests that dont need a beforeEach', () => {
     expect(nickNames).toContain('tree nickname2');
   });
 
-  test.skip('upload unit with a non-existent user - should not add unit, not add image either should return with certain code and certain error message ', async () => {
+  test('upload unit with a non-existent user - should not add unit should return with certain code and certain error message ', async () => {
     const postResponse = await api.post('/api/growing_unit')
       .field('common_names', 'non existent user unit')
       .field('nickname', 'tree nonExUsr')
@@ -97,8 +113,8 @@ describe('Tests that dont need a beforeEach', () => {
 
       
     //Todo: check that there is only one image in the bucket?? or not since that is our test bucket for all projects
-
-    expect(postResponse.body.error).toContain('User does not exist. So Could not save the growing unit. Check user id (aka owner in request body)');
+    const expectedErrorMessage = 'User does not exist. So Could not save the growing unit. Check user id (aka owner in request body)';
+    expect(postResponse.body.error).toContain(expectedErrorMessage);
 
     const response  = await api.get('/api/growing_unit');
 
@@ -106,9 +122,12 @@ describe('Tests that dont need a beforeEach', () => {
 
   });
   
-  test.skip('update growing unit should return the updated object', async () => {
+  test('update growing unit should return the updated object', async () => {
+    //login and getToken
+    const loginReturnObj = await loginMasterAndGetToken();
+
     //find a unit by id
-    const unitToTestId  = await api.get('/api/growing_unit');
+    const unitToTestId = await api.get('/api/growing_unit');
     //console.log('-------unitToTestId.body', unitToTestId.body);
     //console.log( '-------unit to test id', unitToTestId.body[0].unit_id );
     const id = unitToTestId.body[0].unit_id;
@@ -117,6 +136,7 @@ describe('Tests that dont need a beforeEach', () => {
     await api.put(`/api/growing_unit/${id}`)
       .set('Content-Type', 'application/json')
       .send(`{"nickname":"${helper.anUpdatedUnit.nickname}", "location":"${helper.anUpdatedUnit.location}"}`)
+      .set('Authorization', `bearer ${loginReturnObj.token}`)
       .expect(200)
       .expect('Content-Type', /application\/json/);
     
@@ -134,10 +154,8 @@ describe('Tests that dont need a beforeEach', () => {
     //create user
     const newUser = await api.post('/api/users')
       .send(helper.testUserForGrowingUnitTests);
-    //console.log('-----newUser-------------',newUser.body);
 
     //post a unit for that user
-    //console.log('-----newUser.body.user_id------------',newUser.body.user_id);
     const unitToPost = {
       'nickname': 'did token succeed?',
       'common_names': [
@@ -155,52 +173,37 @@ describe('Tests that dont need a beforeEach', () => {
     const postedUnit = await api.post('/api/growing_unit').send(unitToPost);
     const postedUnitId = postedUnit.body.unit_id;
 
-
     //login and get token
-    const user = await api.post('/api/login')
-      .send({ 'username': helper.testUserForGrowingUnitTests.username , 'password': helper.testUserForGrowingUnitTests.password })
-      .expect(200);
-    const token = user.body.token;
-    //console.log('-----login response-------------',user);
-    //console.log('-----user.token being sent-------------',user.body.token);
-
+    const loginReturnObj = await loginAndGetToken();
 
     //update two or 3 factors
     const stringThatFieldsShouldBecome = 'Token thing succeeded';
     await api.put(`/api/growing_unit/${postedUnitId}`)
       .set('Content-Type', 'application/json')
-      .set('Authorization', `bearer ${token}`)
+      .set('Authorization', `bearer ${loginReturnObj.token}`)
       .send(`{"nickname":"${stringThatFieldsShouldBecome}", "location":"${stringThatFieldsShouldBecome}"}`)
       .expect(200)
       .expect('Content-Type', /application\/json/);
 
     //check they are updated
     const theUpdatedObjectInDb = await GrowingUnit.findById(postedUnitId);
-    //console.log('-----theUpdatedObjectInDb-------------',theUpdatedObjectInDb);
 
     expect(theUpdatedObjectInDb.location).toBe(stringThatFieldsShouldBecome);
     expect(theUpdatedObjectInDb.nickname).toBe(stringThatFieldsShouldBecome);
   });
 
   test('update a growing unit should not work without a user token', async () => {
+    const loginReturnObj = await loginAndGetToken();
     
-    //login and get token
-    const user = await api.post('/api/login')
-      .send({ 'username': helper.testUserForGrowingUnitTests.username , 'password': helper.testUserForGrowingUnitTests.password })
-      .expect(200);
-    const token = user.body.token;
-
     //that user will only have one unit at this point
-    const postedUnitId = user.body.user.own_units[0];
+    const postedUnitId = loginReturnObj.user.body.user.own_units[0];
 
     //update two or 3 factors
     const expectedString = 'Token thing succeeded';//in the previous test the test it was updated to 'Token thing succeeded'
 
-    //update two or 3 factors
     const auba = 'Aubameyang', kroosHead = 'Toni Kroos head';
     await api.put(`/api/growing_unit/${postedUnitId}`)
       .set('Content-Type', 'application/json')
-      //.set('Authorization', `bearer ${token}`)
       .send(`{"nickname":"${auba}", "location":"${kroosHead}"}`)
       .expect(401)
       .expect('Content-Type', /application\/json/)
@@ -216,7 +219,53 @@ describe('Tests that dont need a beforeEach', () => {
     expect(theUpdatedObjectInDb.location).not.toBe(auba);
     expect(theUpdatedObjectInDb.nickname).not.toBe(kroosHead);
   });
+  
+  test('delete a growing unit should not work without a user token', async () => {
+    const loginReturnObj = await loginAndGetToken();
+    const userId = loginReturnObj.user.body.user.user_id;
+    
+    //that user will only have one unit at this point
+    const postedUnitId = loginReturnObj.user.body.user.own_units[0];
+    await api.delete(`/api/growing_unit/${postedUnitId}`).expect(401);
 
+    const allUnits = await GrowingUnit.find({});
+    const usersUnitsInDb = allUnits.filter(u => u.owner.toString() === userId.toString());
+    expect(usersUnitsInDb.length).toBe(1);
+  });
+
+  test('delete a growing unit should not work with another user\'s token', async () => {
+    const loginReturnObj = await loginAndGetToken();
+    const userId = loginReturnObj.user.body.user.user_id;
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RVc2VyMSIsImlkIjoiNWZhNjk1YTliM2Y1YTEwMTMwN2ViZWNmIiwiaWF0IjoxNjA1MzU2MzY0fQ.id7Wbx0cSDMLbANRFE8RqJpXiPvmAP8ViN54Yyp9AWM';
+    
+    //that user will only have one unit at this point
+    const postedUnitId = loginReturnObj.user.body.user.own_units[0];
+    await api.delete(`/api/growing_unit/${postedUnitId}`)
+      .set('Authorization', `bearer ${token}`)
+      .expect(401)
+      .then(response => {
+        expect(response.body.error).toBe('You dont have the right permissions to update this unit');
+      });
+
+    const allUnits = await GrowingUnit.find({});
+    const usersUnitsInDb = allUnits.filter(u => u.owner.toString() === userId.toString());
+    expect(usersUnitsInDb.length).toBe(1);
+  });
+  
+  test('delete a growing unit should work with the owner\'s after-login user token', async () => {
+    const loginReturnObj = await loginAndGetToken();
+    const userId = loginReturnObj.user.body.user.user_id;
+    
+    //that user will only have one unit at this point
+    const postedUnitId = loginReturnObj.user.body.user.own_units[0];
+    await api.delete(`/api/growing_unit/${postedUnitId}`)
+      .set('Authorization', `bearer ${loginReturnObj.token}`)
+      .expect(204);
+
+    const allUnits = await GrowingUnit.find({});
+    const usersUnitsInDb = allUnits.filter(u => u.owner.toString() === userId.toString());
+    expect(usersUnitsInDb.length).toBe(0);
+  });
 });
 
 afterAll(() => {
@@ -226,8 +275,7 @@ afterAll(() => {
 //GROWING UNIT TESTS
 
 //TEST: update growing unit image should come with the updated object with one more image
-//TEST: delete a growing unit should not work without a user token
-//TEST: update a growing unit should not work without a user token
+//TEST: delete a growing unit should only work with a user token
 //TEST: post a growing unit should not work without a user token
 //TEST: delete image of a growing unit - should return growing unit without that image; + image deleted from S3
 //TEST: delete growing unit - unit no longer in db, unit images no longer in S3
@@ -236,11 +284,12 @@ afterAll(() => {
 //TEST:
 
 
+
 //USER TESTS
-//TEST: Add user - should return user of the same username and email and also a user id.
-//TEST:login should grant user token
-//TEST:login should grant user token and userObj. userObj contains- array of their units by id, array of units they have access to by id, email, username, userId
-//TEST:The logged-in user now has all their units and can fetch by id. that fetch should give all details about all units
+//TEST:(not tested but done) Add user - should return user of the same username and email and also a user id.
+//TEST:(not tested but done)login should grant user token
+//TEST:(not tested but done) login should grant user token and userObj. userObj contains- array of their units by id, array of units they have access to by id, email, username, userId
+//TEST: (not tested but done) The logged-in user now has all their units and can fetch by id. that fetch should give all details about all units
 //TEST: change password - should have changed password. use new password to login and see if that it grants user token
 
 //TEST: delete a user - user should no longer exist

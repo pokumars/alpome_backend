@@ -209,14 +209,18 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
 };
 
 //add a new image to a unit
-growingUnitsRouter.post('unitimage/:id', multerUploadOptions, (request, response, next) => {
+growingUnitsRouter.post('/unitimage/:id', multerUploadOptions, async (request, response, next) => {
   try {
     const verificationReturnObj = await verifyPermission(request);
 
-    //there is an Image, then it should be uploaded and added to the unit
-    if (request.file){
+    if (!request.file){
+      //they didnt send any image
+      return response.status(400).end();
+    }
+
+    if(verificationReturnObj.isRequestSenderTheOwner){ //request sender is not the unit owner
       //find the growing unit that is getting an image 
-      const unitToUpdate = verificationReturnObj.growingUnit
+      const unitToUpdate = verificationReturnObj.growingUnit;
 
       logger.info('There is an image file ',/*request.file */);
       //upload image
@@ -227,13 +231,13 @@ growingUnitsRouter.post('unitimage/:id', multerUploadOptions, (request, response
           return error;
         }
 
-         /*When successful the response returned by S3 aka 'data' is
-        { ETag: '"13d18b81cc70cd3bea6b7ea60e504373"',
-          Location:'https://[BucketName].s3.amazonaws.com/[objectName.filetype]',
-          key: 'example.png',
-          Key: 'example.png',
-          Bucket: '[BucketName]' 
-        }*/
+        /*When successful the response returned by S3 aka 'data' is
+      { ETag: '"13d18b81cc70cd3bea6b7ea60e504373"',
+        Location:'https://[BucketName].s3.amazonaws.com/[objectName.filetype]',
+        key: 'example.png',
+        Key: 'example.png',
+        Bucket: '[BucketName]' 
+      }*/
 
         //get saved image details and create image object
         const imageToAddToGrowingUnitObject = {
@@ -243,12 +247,15 @@ growingUnitsRouter.post('unitimage/:id', multerUploadOptions, (request, response
           'date_uploaded': Date.now()
         };
 
-        unitToUpdate.images = unitToUpdate.images.concat(imageToAddToGrowingUnitObject)
+        unitToUpdate.images = unitToUpdate.images.concat(imageToAddToGrowingUnitObject);
         const updatedUnit = await unitToUpdate.save();
         logger.info('-------------------------unit that has been updated ', updatedUnit);
         //and append to growingUnit before adding to db
-        response.status(201).send(updatedUnit.toJSON())
+        return response.status(201).send(updatedUnit.toJSON());
       });
+
+    }else{//request sender is not the unit owner
+      return response.status(401).json({error: 'You dont have the right permissions to update this unit'});
     }
   } catch (error) {
     next(error);
