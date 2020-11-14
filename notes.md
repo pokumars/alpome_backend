@@ -241,6 +241,16 @@ Ask me for them
       required- image (obviously)
     </td>
   </tr>
+  <tr>
+    <td>DELETE</td>
+    <td>/api/growing_unit/unitimage/:id</td>
+    <td>delete an image from a growing unit</td>
+    <td>It will return the growing unit object updated absent the deleted image in the images array</td>
+    <td>required- urlParam id of the growing unit you want to add the image to <br>
+      required- send user token in the header.<br>
+      required- filename {"fileName": "example123.jpg"}<br>
+    </td>
+  </tr>
   
 </table>
 
