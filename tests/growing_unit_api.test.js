@@ -275,7 +275,7 @@ afterAll(() => {
 //GROWING UNIT TESTS
 
 //TEST: (not urgent) post a growing unit should not work without a user token
-//TEST: delete image of a growing unit - should return growing unit without that image; + image deleted from S3
+//TEST: (not tested but done) delete image of a growing unit - should return growing unit without that image; + image deleted from S3
 //TEST: (not tested but done) delete growing unit should delete the unit images in S3
 //TEST: (not tested but done)  add new image to growing unit- return growing unit with 1 more image and image in S3
 //TEST: (not tested but done) update growing unit image should come with the updated object with one more image
@@ -296,5 +296,5 @@ afterAll(() => {
 //TEST: delete a user - user should no longer exist
 //TEST: delete a user - user should no longer exist nor their growing units, nor their growing unit's images
 //TEST: //TODO: delete growing unit from user when it is deleted  
-
+//for the user forgotpassword thing, try sending the link for that specifc user with the user id or some better solution
 
