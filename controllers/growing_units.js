@@ -191,15 +191,11 @@ growingUnitsRouter.put('/:id', async (request, response, next) => {
 });
 
 
-const saveGrowingUnit = (unitToSave, next) => {
+const saveGrowingUnit = async (unitToSave, next) => {
   //uploadedGrowingUnit is the object mongodb returns to us after it confirms having received it.
-  const uploadedGrowingUnit = new GrowingUnit(unitToSave);
-  return uploadedGrowingUnit.save()
-    .then(savedGrowingUnit => savedGrowingUnit.toJSON())
-    .then(savedAndFormattedGrUnit => {
-      return savedAndFormattedGrUnit;
-    })
-    .catch(error => next(error));
+  const unitToUpload = new GrowingUnit(unitToSave);
+  const uploadedGrowingUnit = await unitToUpload.save();
+  return uploadedGrowingUnit.toJSON();
 };
 
 const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, response, next) => {
@@ -220,15 +216,21 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
     const savedUnit = await saveGrowingUnit(growingUnitToSave, next);
     logger.info('-------------------------unit that has been saved ', savedUnit);
 
+
     //add that unit's id to the user's array of units
     user.own_units = user.own_units.concat(savedUnit.unit_id);
     const updatedUser = await user.save();
     logger.info('-------------------------user that has been updated ', updatedUser);
 
-    return savedUnit;
+    if(savedUnit){
+      return savedUnit;
+    }
   } catch (error) {
-    next(error);
-    return;
+    console.trace();
+    console.error('----------------The error ----------', error);
+    console.log('catch error handler called');
+    return response.status(401).send({error: error});
+    //return next(error);
   }
 };
 
@@ -282,6 +284,7 @@ growingUnitsRouter.post('/unitimage/:id', multerUploadOptions, async (request, r
       return response.status(401).json({error: 'You dont have the right permissions to update this unit'});
     }
   } catch (error) {
+
     next(error);
   }
 });
@@ -379,6 +382,8 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
     }
 
   } catch (error) {
+    console.trace();
+    console.log('catch error handler called');
     next(error);
   }
 });
