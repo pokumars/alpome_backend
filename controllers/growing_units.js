@@ -226,9 +226,9 @@ const saveGrowingUnitAndAddToUserObject = async (growingUnitToSave, userId, resp
       return savedUnit;
     }
   } catch (error) {
-    console.trace();
-    console.error('----------------The error ----------', error);
-    console.log('catch error handler called');
+    //console.trace();
+    //console.error('----------------The error ----------', error);
+    //console.log('catch error handler called');
     return response.status(401).send({error: error});
     //return next(error);
   }
@@ -382,8 +382,8 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
     }
 
   } catch (error) {
-    console.trace();
-    console.log('catch error handler called');
+    //console.trace();
+    //console.log('catch error handler called');
     next(error);
   }
 });

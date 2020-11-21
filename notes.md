@@ -216,7 +216,8 @@ Ask me for them
         }</br>
     ],</br>
     "unit_id": "5f9bbd88c6647153ec25826a"</br>
-    }</code> </td>
+    }</code> </br>
+    If there is an error in saving it will come back with status of 4hundred and something and the error object</td>
     <td>required- send user token in the header <br></td>
   </tr>
     <tr>
