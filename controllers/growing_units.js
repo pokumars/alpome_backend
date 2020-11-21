@@ -318,6 +318,7 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
       owner: body.owner,
       shared_access: [],
       stream_url: body.url,
+      notes: body.notes
     };
     //If user doesnt exist/cant be found dont proceed at all
     const user = await User.findById(body.owner);

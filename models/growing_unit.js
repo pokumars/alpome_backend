@@ -30,6 +30,10 @@ const growingUnitSchema = new mongoose.Schema({
     ...userDBReference,
     required: true
   },
+  notes: {
+    type: String,
+    maxlength: 200
+  },
   shared_access: [userDBReference],
   stream_url: String,
   images: [{image_url: String, date_uploaded: Date, fileName: String,  Key: String, }]
