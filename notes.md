@@ -175,7 +175,7 @@ Ask me for them
     "nickname": "Christmas Tree",</br>
     "location": "home",</br>
     "supragarden": false,</br>
-    "last_watered": "2020-10-30T07:15:20.288Z",</br>
+    "last_watered": 1606319784599,</br>
     "watering_frequency": 432000000,</br>
     "data_source": null,</br>
     "stream_url": "something.com",</br>
@@ -204,7 +204,7 @@ Ask me for them
     "nickname": "Christmas Tree",</br>
     "location": "home",</br>
     "supragarden": false,</br>
-    "last_watered": "2020-10-30T07:15:20.288Z",</br>
+    "last_watered": 1606319784599,</br>
     "watering_frequency": 432000000,</br>
     "data_source": null,</br>
     "stream_url": "something.com",</br>
@@ -262,4 +262,4 @@ TODO:
 that they are themselves and they are logged in. I dont have it yet setup so dont worry about it until I do. When I do, all you have to is save it on the pc and then attach it to the request headers (or smth like that).
 
 User token should be added in headers like so 
-'headers': { 'Authorization': 'bearer ey....'}
+'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}

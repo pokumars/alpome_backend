@@ -22,7 +22,7 @@ const growingUnitSchema = new mongoose.Schema({
     type: Boolean,
     required: true
   },
-  last_watered: Date, //null if supragarden,
+  last_watered: Number, //null if supragarden,
   watering_frequency: Number,
   data_source: String,
   common_names: [String],
