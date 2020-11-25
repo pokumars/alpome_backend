@@ -15,7 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(middleware.getTokenFrom);
-
+app.use(express.static('build'));
 
 if (process.env.NODE_ENV !== 'test'){
   //morgan logs any incoming request. The array below is  how we want it to log the details
