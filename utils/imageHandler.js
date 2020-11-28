@@ -1,9 +1,9 @@
-require('dotenv').config();
+const config = require('./config');
 const multer= require('multer');
 const AWS = require('aws-sdk');
 const logger = require('./logger');
 const uuid = require('uuid').v4;
-const myS3Bucket= process.env.AWS_BUCKET_NAME; //bucketOwner = process.env.AWS_BUCKET_OWNER;
+const myS3Bucket= config.AWS_BUCKET_NAME ; //bucketOwner = process.env.AWS_BUCKET_OWNER;
 
 const S3 = new AWS.S3({
   accessKeyId: process.env.AWS_ID,
