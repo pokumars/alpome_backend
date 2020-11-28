@@ -8,6 +8,7 @@ const logger = require('./utils/logger');
 const config = require('./utils/config');
 const mongoose = require('mongoose');
 const middleware = require('./utils/middleware');
+const path = require('path');
 const currentLocalDateTime = require('./utils/helperFunctions').currentLocalDateTime;
 
 const app = express();
@@ -46,6 +47,12 @@ app.use('/api/users', usersRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/growing_unit', growingUnitsRouter);
 
+__dirname = path.resolve(path.dirname(''));
+app.get('/*', function response(req, res) {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+/*
 app.get('/', (request, response) => {
   //TODO: change this when you have real 404 page
   response.send(`
@@ -53,7 +60,7 @@ app.get('/', (request, response) => {
   <a href="/api/users">/api/users</a> <br/>
   <a href="/api/users/2">/api/users/2</a>
   `);
-});
+});*/
 
 app.use(middleware.errorHandler);
 
