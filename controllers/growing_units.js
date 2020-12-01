@@ -141,10 +141,10 @@ growingUnitsRouter.delete('/unitimage/:id',async (request, response, next) => {
     if(verificationReturnObj.isRequestSenderTheOwner){
       const growingUnit = verificationReturnObj.growingUnit;
 
-      logger.info(deleteGrowingUnitImagesFromS3([body.fileName], response));
+      logger.info('---logger-deleting file in s3',deleteGrowingUnitImagesFromS3([body.fileName], response));
 
       //remove image from growing unit obj
-      growingUnit.images = growingUnit.images.filter(imgObj => imgObj.filename !==body.filename);
+      growingUnit.images = growingUnit.images.filter(imgObj => imgObj.fileName !==body.fileName);
       const updatedGrowingUnit = await growingUnit.save();
 
       return response.status(200).send(updatedGrowingUnit.toJSON());
