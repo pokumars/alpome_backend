@@ -5,8 +5,33 @@ const { SALT_ROUNDS } = require('../utils/config');
 const GrowingUnit = require('../models/growing_unit');
 const { deleteGrowingUnitImagesFromS3 } = require('../utils/imageHandler');
 const logger = require('../utils/logger');
+const jwt = require('jsonwebtoken');
 
 const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, unit_id: 1, };
+
+/**
+ * 
+ * @param {*} request 
+ * @return {Object}  {@link UnitUserLink} growingUnit:Obj, decodedToken: Obj, user:Obj, unitId:string, isRequestSenderTheOwner:Bool
+ */
+const verifyPermission = async (request) => {
+  const userId = request.params.id;
+  const token = request.token;
+  const decodedToken = jwt.verify(token, process.env.SECRET);
+
+
+  const decodedUserFromToken = await User.findById(decodedToken.id);
+  const user = await User.findById(userId);
+
+  //Is the sender of the request the owner of the unit. Only owner should be able to update.
+  console.log('decodedUserFromToken._id.toString() === user._id.toString() ----',decodedUserFromToken._id.toString() === user._id.toString())
+
+  return {
+    decodedToken, user, userId,
+    isRequestSenderTheOwner: decodedUserFromToken._id.toString() === user._id.toString()
+  };
+};
+
 // /api/users/ Get all users
 usersRouter.get('/', async (request, response, next) => {
   try {
@@ -109,6 +134,43 @@ usersRouter.post('/', async (request, response, next) => {
     next(exception);
   }
 });
+
+usersRouter.put('/:id', async (request, response, next) => {
+  //all updates to a growing unit except adding of new image
+  try {
+    const verificationReturnObj = await verifyPermission(request);
+    
+
+    //Is the sender of the request the the owner of the account. Only owner should be able to update.
+    if(verificationReturnObj.isRequestSenderTheOwner){
+      
+      logger.info('PUT request.body---------------------',request.body);
+      // atm only email is updatable by the user.
+      delete request.body.passwordHash;
+      // any property sent that isnt in the schema does not get saved
+      const replacement =  Object.assign(verificationReturnObj.user , request.body);
+      logger.info('replacement---------------------', replacement);
+  
+      const updatedUser = await User
+        .findByIdAndUpdate(verificationReturnObj.userId, replacement, { new: true });
+      
+      if (updatedUser) {
+        response.json(updatedUser.toJSON());
+      } else {
+        logger.error('some error updating user of id ', verificationReturnObj.userId);
+        response.json({
+          error: 'Could not find user to update'
+        });
+      }
+    }else {
+      response.status(401).json({error: 'You dont have the right permissions to update this user'});
+    }
+  } catch (error) {
+    next(error);
+    response.status(400);
+  }
+});
+
 
 module.exports = usersRouter;
 

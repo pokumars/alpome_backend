@@ -35,7 +35,7 @@ if (process.env.NODE_ENV !== 'test'){
 const dbUri = config.MONGODB_URI;
 logger.info('connecting to MongoDB');
 
-mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
   .then(() => {
     logger.info('connected to MongoDB');
   })
