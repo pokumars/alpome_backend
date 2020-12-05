@@ -54,10 +54,15 @@ const uploadParams = (request) => {
  * @param {*} response - Response of the router request
  */
 const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
+  const objects = itemKeysToDelete.map((x) => {
+    return {Key: x};
+  });
+  console.log('objects in deleteGrowingUnitImagesFromS3-----------', objects);
+  
   const deleteParams = {
     Bucket: myS3Bucket, /* required */
     Delete: { /* required */
-      Objects: itemKeysToDelete.map(x => Object.assign({}, {Key: x}))
+      Objects: objects
     }
   };
   logger.info('deleteParams from deleteGrowingUnitImagesFromS3 -----',deleteParams);
@@ -72,6 +77,29 @@ const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
   });
 };
 
+const getObjectFromS3 = async (objectKey) => {
+  const getParams = {
+    Bucket: myS3Bucket, /* required */
+    Key: objectKey
+  };
+  console.log('the key of the object to fetch s3 -----------', getParams.Key);
 
-module.exports = { multerUploadOptions, S3, uploadParams, deleteGrowingUnitImagesFromS3 };
+  //you need to make a promise wrapper around it since s3 doesnt return a promise
+  return new Promise((resolve, reject) => {
+    S3.getObject(getParams, (err, data) => {
+      if (err) {
+      //console.log('error message -----------------', err);
+        console.log('err.stack -----------------',err.statusCode);
+        resolve(err);
+      } // an error occurred
+      else {
+        console.log(data);
+        resolve(data);
+      }
+    });
+  });
+};
+
+
+module.exports = { multerUploadOptions, S3, uploadParams, deleteGrowingUnitImagesFromS3, getObjectFromS3 };
 
