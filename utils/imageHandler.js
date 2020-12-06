@@ -53,7 +53,7 @@ const uploadParams = (request) => {
  * @param {S3Keys[]} itemKeysToDelete - keys of the item to delete
  * @param {*} response - Response of the router request
  */
-const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
+const deleteGrowingUnitImagesFromS3 = async (itemKeysToDelete, response) => {
   const objects = itemKeysToDelete.map((x) => {
     return {Key: x};
   });
@@ -66,15 +66,18 @@ const deleteGrowingUnitImagesFromS3 = (itemKeysToDelete, response) => {
     }
   };
   logger.info('deleteParams from deleteGrowingUnitImagesFromS3 -----',deleteParams);
-  S3.deleteObjects(deleteParams, (error, data) => {
-    if (error) {
-      logger.error(error);
-      return response.status(500).send({error: error});
-    } else {
-      logger.info('success data from S3.deleteObjects ------', data);
-      return data;
-    }
-  });
+  return new Promise((resolve, reject) => {
+    S3.deleteObjects(deleteParams, (error, data) => {
+      if (error) {
+        logger.error(error);
+        // response.status(500).send({error: error});
+        resolve (error);
+      } else {
+        logger.info('success data from S3.deleteObjects ------', data);
+        resolve(data);
+      }
+    });
+  })
 };
 
 const getObjectFromS3 = async (objectKey) => {
