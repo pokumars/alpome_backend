@@ -127,7 +127,7 @@ test('delete a user - user should no longer exist nor their growing units, nor t
   const userToken = loginResponseObj.token;
   const userObj = loginResponseObj.user.body.user;
   // console.log('userToken-----------------', userToken);
-  console.log('userObj-----------------', userObj);
+  //console.log('userObj-----------------', userObj);
 
   // post a growing unit with image
   const testUnit1 = await api.post('/api/growing_unit')
@@ -145,7 +145,7 @@ test('delete a user - user should no longer exist nor their growing units, nor t
     .attach('image', helper.imageFile);
 
 
-  console.log('testUnit1-----------------', testUnit1.body);
+  //console.log('testUnit1-----------------', testUnit1.body);
   const test1Image1Url =testUnit1.body.images[0].image_url
   const test1Image1Key =testUnit1.body.images[0].Key
   //console.log('test1Image1Url-----------------', test1Image1Url);

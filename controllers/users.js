@@ -19,13 +19,13 @@ const verifyPermission = async (request) => {
   const token = request.token;
   const decodedToken = jwt.verify(token, process.env.SECRET); // id is in property .id
 
-  console.log('userId----------------',userId);
+  //console.log('userId----------------',userId);
 
   const user = await User.findById(userId); // id is in property ._id
-  console.log('decodedToken----------------',decodedToken);
-  console.log('user------------------',user);
+  //console.log('decodedToken----------------',decodedToken);
+  //console.log('user------------------',user);
   //Is the sender of the request the owner of the unit. Only owner should be able to update.
-  console.log('decodedUserFromToken._id.toString() === user._id.toString() ----',decodedToken.id.toString() === user._id.toString())
+  //console.log('decodedUserFromToken._id.toString() === user._id.toString() ----',decodedToken.id.toString() === user._id.toString())
 
   return {
     decodedToken, user, userId,
@@ -84,7 +84,7 @@ usersRouter.delete('/:id',async (request, response, next) => {
         $in: [...user.own_units]
       }});
   
-      console.log('theUsersGrowingUnits------------', theUsersGrowingUnits);
+      //console.log('theUsersGrowingUnits------------', theUsersGrowingUnits);
       //TEST: if one user has 3 units that all have 3 images. Make sure all images are deleted
       //1. get all units to be deleted, map that array and get all image objects which is itself an array
       //2. Flatten from Array of Array of objects [[{imgObj},{imgObj}], [{imgObj},{imgObj}]] to array of objects[{imgObj}]

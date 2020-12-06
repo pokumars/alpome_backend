@@ -65,9 +65,15 @@ const testUserForUserApiTests = {
 
 const imagePath = 'C:/Users/ohene/Downloads/taffel_joulukalenteri.png';
 const imageFile = fs.createReadStream(imagePath);
+
+const imagePath2 = 'C:/Users/ohene/Downloads/reactjs_image.png';
+const imageFile2 = fs.createReadStream(imagePath2);
+
+
 module.exports = {
   initialGrowingUnits,
   imageFile,
+  imageFile2,
   unitsInDb,
   usersInDb,
   anUpdatedUnit,

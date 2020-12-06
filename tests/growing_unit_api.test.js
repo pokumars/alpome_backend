@@ -42,11 +42,6 @@ describe('Tests that dont need a beforeEach', () => {
     //TODO: delete growing unit images too when u delete a growing unit 
     await GrowingUnit.deleteMany({});
     await User.deleteMany({ _id: { $ne: '5fa695a9b3f5a101307ebecf' }});
-
-  
-    /*let growingUnitObject = new GrowingUnit(initialGrowingUnits[0]);
-    await growingUnitObject.save();*/
-    const myName = 'ohe';
     
     await api.post('/api/growing_unit')
       .field('common_names', 'image tree 1')
@@ -271,7 +266,7 @@ describe('Tests that dont need a beforeEach', () => {
     expect(usersUnitsInDb.length).toBe(0);
   });
 
-  test('delete a growing unit should delete the image too', async () => {
+  test('delete a growing unit should delete the multiple images too', async () => {
     // login
     const loginReturnObj = await loginAndGetToken();
     const userId = loginReturnObj.user.body.user.user_id;
@@ -291,29 +286,42 @@ describe('Tests that dont need a beforeEach', () => {
       .field('owner', userId)
       .attach('image', helper.imageFile);
 
+      //upload a second image
+       const secondImage = await api.post(`/api/growing_unit/unitimage/${testUnit1.body.unit_id}`)
+      .set('Authorization', `bearer ${loginReturnObj.token}`)
+      .attach('image', helper.imageFile2);
 
-    //console.log('testUnit1-----------------', testUnit1.body);
-    //const test1Image1Url =testUnit1.body.images[0].image_url
-    const test1Image1Key =testUnit1.body.images[0].Key
+      //Get the image keys
+    const test1Image1Key =secondImage.body.images[0].Key;
+    const testImage2Key =secondImage.body.images[1].Key;
 
+    //Check that they indeed did get uploaded
     const theImageGotUploaded = await getObjectFromS3(test1Image1Key);
-    //console.log('theImage.Body in test----------------', theImage.Body)
-    //console.log('theImageGotUploaded in test----------------', theImageGotUploaded);
+    const theSecondImageGotUploaded = await getObjectFromS3(testImage2Key);
 
+    //Check image1 to see if it was uploaded
     expect(theImageGotUploaded.statusCode).toBeUndefined();
     expect(theImageGotUploaded.Body).toBeDefined();
 
+    //Check image2 to see if it was uploaded
+    expect(theSecondImageGotUploaded.statusCode).toBeUndefined();
+    expect(theSecondImageGotUploaded.Body).toBeDefined();
 
+    //delete unit
     await api.delete(`/api/growing_unit/${testUnit1.body.unit_id}`)
       .set('Authorization', `bearer ${loginReturnObj.token}`)
       .expect(204);
 
+    //fetch the images again
     const theImage = await getObjectFromS3(test1Image1Key);
-    //console.log('theImage.Body in test----------------', theImage.Body)
-    //console.log('theImage in test----------------', theImage)
+    const theSecondImageInS3 = await getObjectFromS3(testImage2Key);
     
+    //check that img1 is no longer in s3
     expect(theImage.statusCode).toBe(404);
     expect(theImage.Body).toBeUndefined();
+    //check that img2 is no longer in s3
+    expect(theSecondImageInS3.statusCode).toBe(404);
+    expect(theSecondImageInS3.Body).toBeUndefined();
   });
 });
 
@@ -324,9 +332,9 @@ afterAll(() => {
 //GROWING UNIT TESTS
 
 //TEST: (not urgent) post a growing unit should not work without a user token
-//TEST: (not tested but done) delete image of a growing unit - should return growing unit without that image; + image deleted from S3
-//TEST: (not tested but done) delete growing unit should delete the unit images in S3
+//TEST: (done) delete image of a growing unit - should return growing unit without that image; + image deleted from S3
+//TEST: (done) delete growing unit should delete the unit images in S3
 //TEST: (not tested but done)  add new image to growing unit- return growing unit with 1 more image and image in S3
-//TEST: (not tested but done) update growing unit image should come with the updated object with one more image
+//TEST: (not tested but done) update growing unit image should come with the updated object with one more image (put to the test in - 'delete a growing unit should delete the multiple images too')
 
 
