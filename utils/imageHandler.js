@@ -57,7 +57,7 @@ const deleteGrowingUnitImagesFromS3 = async (itemKeysToDelete, response) => {
   const objects = itemKeysToDelete.map((x) => {
     return {Key: x};
   });
-  console.log('objects in deleteGrowingUnitImagesFromS3-----------', objects);
+  //console.log('objects in deleteGrowingUnitImagesFromS3-----------', objects);
   
   const deleteParams = {
     Bucket: myS3Bucket, /* required */
@@ -85,18 +85,18 @@ const getObjectFromS3 = async (objectKey) => {
     Bucket: myS3Bucket, /* required */
     Key: objectKey
   };
-  console.log('the key of the object to fetch s3 -----------', getParams.Key);
+  // console.log('the key of the object to fetch s3 -----------', getParams.Key);
 
   //you need to make a promise wrapper around it since s3 doesnt return a promise
   return new Promise((resolve, reject) => {
     S3.getObject(getParams, (err, data) => {
       if (err) {
       //console.log('error message -----------------', err);
-        console.log('err.stack -----------------',err.statusCode);
+        logger.error('err.stack -----------------',err.statusCode);
         resolve(err);
       } // an error occurred
       else {
-        console.log(data);
+        logger.info(data);
         resolve(data);
       }
     });

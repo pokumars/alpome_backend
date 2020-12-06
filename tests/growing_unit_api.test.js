@@ -4,6 +4,7 @@ const app = require('../app');
 const helper = require('./testHelper');
 const GrowingUnit = require('../models/growing_unit');
 const User = require('../models/user');
+const { getObjectFromS3 } = require('../utils/imageHandler');
 //delete all users except await User.deleteMany({ _id: { $ne: '5fa695a9b3f5a101307ebecf' }});
 
 
@@ -45,7 +46,7 @@ describe('Tests that dont need a beforeEach', () => {
   
     /*let growingUnitObject = new GrowingUnit(initialGrowingUnits[0]);
     await growingUnitObject.save();*/
-  
+    const myName = 'ohe';
     
     await api.post('/api/growing_unit')
       .field('common_names', 'image tree 1')
@@ -269,6 +270,51 @@ describe('Tests that dont need a beforeEach', () => {
     const usersUnitsInDb = allUnits.filter(u => u.owner.toString() === userId.toString());
     expect(usersUnitsInDb.length).toBe(0);
   });
+
+  test('delete a growing unit should delete the image too', async () => {
+    // login
+    const loginReturnObj = await loginAndGetToken();
+    const userId = loginReturnObj.user.body.user.user_id;
+
+    // post a growing unit with image
+    const testUnit1 = await api.post('/api/growing_unit')
+      .set('Authorization', `bearer ${loginReturnObj.token}`)
+      .field('common_names', 'unit for delete user test 1')
+      .field('nickname', 'unit for delete user test 1')
+      .field('location', 'Grandma\'s place3')
+      .field('shared_access', '[]')
+      .field('supragarden', 'false')
+      .field('last_watered', 'null')
+      .field('watering_frequency', '432000000')
+      .field('data_source', 'null')
+      .field('stream_url', 'someshite.smth')
+      .field('owner', userId)
+      .attach('image', helper.imageFile);
+
+
+    //console.log('testUnit1-----------------', testUnit1.body);
+    //const test1Image1Url =testUnit1.body.images[0].image_url
+    const test1Image1Key =testUnit1.body.images[0].Key
+
+    const theImageGotUploaded = await getObjectFromS3(test1Image1Key);
+    //console.log('theImage.Body in test----------------', theImage.Body)
+    //console.log('theImageGotUploaded in test----------------', theImageGotUploaded);
+
+    expect(theImageGotUploaded.statusCode).toBeUndefined();
+    expect(theImageGotUploaded.Body).toBeDefined();
+
+
+    await api.delete(`/api/growing_unit/${testUnit1.body.unit_id}`)
+      .set('Authorization', `bearer ${loginReturnObj.token}`)
+      .expect(204);
+
+    const theImage = await getObjectFromS3(test1Image1Key);
+    //console.log('theImage.Body in test----------------', theImage.Body)
+    //console.log('theImage in test----------------', theImage)
+    
+    expect(theImage.statusCode).toBe(404);
+    expect(theImage.Body).toBeUndefined();
+  });
 });
 
 afterAll(() => {
@@ -283,21 +329,4 @@ afterAll(() => {
 //TEST: (not tested but done)  add new image to growing unit- return growing unit with 1 more image and image in S3
 //TEST: (not tested but done) update growing unit image should come with the updated object with one more image
 
-
-
-//TEST:
-
-
-
-//USER TESTS
-//TEST:(not tested but done) Add user - should return user of the same username and email and also a user id.
-//TEST:(not tested but done)login should grant user token
-//TEST:(not tested but done) login should grant user token and userObj. userObj contains- array of their units by id, array of units they have access to by id, email, username, userId
-//TEST: (not tested but done) The logged-in user now has all their units and can fetch by id. that fetch should give all details about all units
-//TEST: change password - should have changed password. use new password to login and see if that it grants user token
-
-//TEST: delete a user - user should no longer exist
-//TEST: delete a user - user should no longer exist nor their growing units, nor their growing unit's images
-//TEST: //TODO: delete growing unit from user when it is deleted  
-//for the user forgotpassword thing, try sending the link for that specifc user with the user id or some better solution
 
