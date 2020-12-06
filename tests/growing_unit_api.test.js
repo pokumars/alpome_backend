@@ -31,10 +31,13 @@ test('', async () => {
   expect()
 });
 */
-
 describe('Tests that dont need a beforeEach', () => {
   beforeAll(async () => {
-    
+    /*const masterUnit = await User.findById('5fa695a9b3f5a101307ebecf');
+    console.log('masterUnit.own_units',masterUnit.own_units);
+    //TODO: delete growing unit images too when u delete a growing unit 
+    await GrowingUnit.deleteMany({ _id: { $ne: {$in:masterUnit.own_units.map(id => ObjectId(id.toString())) }}});*/
+
     //TODO: delete growing unit images too when u delete a growing unit 
     await GrowingUnit.deleteMany({});
     await User.deleteMany({ _id: { $ne: '5fa695a9b3f5a101307ebecf' }});

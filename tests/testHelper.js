@@ -57,6 +57,12 @@ const testUserForGrowingUnitTests = {
   'email': 'tokenUser1@testme.com'
 };
 
+const testUserForUserApiTests = {
+  'username': 'tokenUser2',
+  'password': 'jonSnow2',
+  'email': 'tokenUser2@testme.com'
+};
+
 const imagePath = 'C:/Users/ohene/Downloads/taffel_joulukalenteri.png';
 const imageFile = fs.createReadStream(imagePath);
 module.exports = {
@@ -66,4 +72,5 @@ module.exports = {
   usersInDb,
   anUpdatedUnit,
   testUserForGrowingUnitTests,
+  testUserForUserApiTests
 };

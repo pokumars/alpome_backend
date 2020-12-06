@@ -17,18 +17,19 @@ const populatedGrowingUnitFields = {nickname: 1, supragarden: 1,location: 1, uni
 const verifyPermission = async (request) => {
   const userId = request.params.id;
   const token = request.token;
-  const decodedToken = jwt.verify(token, process.env.SECRET);
+  const decodedToken = jwt.verify(token, process.env.SECRET); // id is in property .id
 
+  console.log('userId----------------',userId);
 
-  const decodedUserFromToken = await User.findById(decodedToken.id);
-  const user = await User.findById(userId);
-
+  const user = await User.findById(userId); // id is in property ._id
+  console.log('decodedToken----------------',decodedToken);
+  console.log('user------------------',user);
   //Is the sender of the request the owner of the unit. Only owner should be able to update.
-  console.log('decodedUserFromToken._id.toString() === user._id.toString() ----',decodedUserFromToken._id.toString() === user._id.toString())
+  console.log('decodedUserFromToken._id.toString() === user._id.toString() ----',decodedToken.id.toString() === user._id.toString())
 
   return {
     decodedToken, user, userId,
-    isRequestSenderTheOwner: decodedUserFromToken._id.toString() === user._id.toString()
+    isRequestSenderTheOwner: decodedToken.id.toString() === user._id.toString()
   };
 };
 
@@ -71,31 +72,43 @@ usersRouter.delete('/:id',async (request, response, next) => {
   //TODO: confirm user  has token before they can delete themselves.
   //TODO: confirm that user can only delete they themselves
   //TODO: delete user means delete all their uploaded units as well as their images
+  const verificationReturnObj = await verifyPermission(request);
   const id = request.params.id;
   try {
-    const user = await User.findById(id,  { username: 1, own_units:1});
-    if(!user) return response.status(204);//204 doesnt send any message with it
+    if(verificationReturnObj.isRequestSenderTheOwner){
+      const user = await User.findById(id,  { username: 1, own_units:1});
+      if(!user) return response.status(204);//204 doesnt send any message with it
     
-    //find all thegrowing units in user.own_units by id
-    const theUsersGrowingUnits = await GrowingUnit.find({_id:{
-      $in: [...user.own_units]
-    }});
-    
-    //TEST: if one user has 3 units that all have 3 images. Make sure all images are deleted
-    //1. get all units to be deleted, map that array and get all image objects which is itself an array
-    //2. Flatten from Array of Array of objects [[{imgObj},{imgObj}], [{imgObj},{imgObj}]] to array of objects[{imgObj}]
-    //3. use map to get the s3 key of the images and put that in an array [key, key, key]
-    const allThisUsersUnitImageKeys = theUsersGrowingUnits.map(u => u.images).flat(2).map(img => img.Key);
-    deleteGrowingUnitImagesFromS3(allThisUsersUnitImageKeys, response);
+      //find all thegrowing units in user.own_units by id
+      const theUsersGrowingUnits = await GrowingUnit.find({_id:{
+        $in: [...user.own_units]
+      }});
+  
+      console.log('theUsersGrowingUnits------------', theUsersGrowingUnits);
+      //TEST: if one user has 3 units that all have 3 images. Make sure all images are deleted
+      //1. get all units to be deleted, map that array and get all image objects which is itself an array
+      //2. Flatten from Array of Array of objects [[{imgObj},{imgObj}], [{imgObj},{imgObj}]] to array of objects[{imgObj}]
+      //3. use map to get the s3 key of the images and put that in an array [key, key, key]
+      const allThisUsersUnitImageKeys = theUsersGrowingUnits.map(u => u.images).flat(2).map(img => img.Key);
+      console.log('allThisUsersUnitImageKeys------------', allThisUsersUnitImageKeys);
 
-    await GrowingUnit.deleteMany({_id:{
-      $in: [...user.own_units]
-    }});
+      if(allThisUsersUnitImageKeys.length > 0){
+        const deletionResponse = await deleteGrowingUnitImagesFromS3(allThisUsersUnitImageKeys, response);
 
-    await User.findByIdAndDelete(id);
+        logger.info('deleting all files of the user in s3', deletionResponse);
+      }
+
+      await GrowingUnit.deleteMany({_id:{
+        $in: [...user.own_units]
+      }});
+
+      await User.findByIdAndDelete(id);
     
-    response.status(204).end();
+      response.status(204).end();
     //response.status(204).send(`user has been deleted ${allUsersUnitImages}`);
+    }else {
+      response.status(401).json({error: 'You dont have the right permissions to delete this user'});
+    }
   } catch (error) {
     next(error);
   }

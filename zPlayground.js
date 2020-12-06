@@ -1,6 +1,14 @@
-const { deleteGrowingUnitImagesFromS3 } = require("./utils/imageHandler");
+const { deleteGrowingUnitImagesFromS3, getObjectFromS3 } = require("./utils/imageHandler");
+
+const testGet = async () => {
+  await getObjectFromS3('94402db1-26a1-4118-8eed-26aeee.png');
+};
 
 
+
+
+
+/*
 const mega =[
   [
     {
@@ -31,12 +39,19 @@ const mega =[
   ]
 ];
 
+
 const test = Object.assign({}, {jj: 55});
 //console.log(test);
 
 const map1 = mega.map(x => Object.assign({}, {Key: x}));
 
 console.log(map1);
+*/
 
+const testDelete = async () => {
+  
+  const deletionResponse = await deleteGrowingUnitImagesFromS3(['a95731dc-1f46-4a0e-9382-76a95da9f95e.png']);
+  console.log('test delete response ------',deletionResponse);
+};
 
-deleteGrowingUnitImagesFromS3(arr, null, null);
+testDelete()

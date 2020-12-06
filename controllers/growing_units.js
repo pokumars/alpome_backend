@@ -109,7 +109,10 @@ growingUnitsRouter.delete('/:id',async (request, response, next) => {
         logger.info('deletedUnit -------',deletedUnit);
 
         //delete its images if there are any
-        if(unitToDelete.images.length > 0 ) {logger.info(deleteGrowingUnitImagesFromS3(allTheUnitImageKeys, response));}
+        if(unitToDelete.images.length > 0 ) {
+          const deletionResponse = await deleteGrowingUnitImagesFromS3(allTheUnitImageKeys, response);
+          logger.info(deletionResponse);
+        }
         return response.status(204).end();
 
       }else{//else nothing is changed or deleted AT ALL
@@ -141,7 +144,9 @@ growingUnitsRouter.delete('/unitimage/:id',async (request, response, next) => {
     if(verificationReturnObj.isRequestSenderTheOwner){
       const growingUnit = verificationReturnObj.growingUnit;
 
-      logger.info('---logger-deleting file in s3',deleteGrowingUnitImagesFromS3([body.fileName], response));
+      const deletionResponse = await deleteGrowingUnitImagesFromS3([body.fileName], response);
+
+      logger.info('---logger-deleting file in s3', deletionResponse);
 
       //remove image from growing unit obj
       growingUnit.images = growingUnit.images.filter(imgObj => imgObj.fileName !==body.fileName);
