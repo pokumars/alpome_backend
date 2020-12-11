@@ -319,7 +319,7 @@ growingUnitsRouter.post('/', multerUploadOptions, async (request, response, next
       nickname: body.nickname,
       location: body.location,
       supragarden: body.supragarden,
-      last_watered: null, //null if supragarden,
+      last_watered: body.supragarden || null, // null if supragarden,
       watering_frequency: body.watering_frequency || null,
       data_source: body.data_source || null,
       common_names: typeof(body.common_names) === 'string' ? [body.common_names] : [...body.common_names],
