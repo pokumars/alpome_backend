@@ -88,7 +88,7 @@ Ask me for them
               "email": "Sincere@april.biz"</br>
           }
         </code>,</br> userObj,</br> ......</br>]</td>
-      <td>TODO</td>
+      <td>none</td>
     </tr>
     <tr>
       <td>GET</td>
@@ -102,7 +102,10 @@ Ask me for them
           "email": "Sincere@april.biz"</br>
       }
     </code> </td>
-      <td>urlParam id of type int</td>
+      <td>
+        urlParam id of type int. </br>
+        'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}
+      </td>
     </tr>
     <tr>
       <td>POST</td>
@@ -137,9 +140,12 @@ Ask me for them
     <tr>
       <td>PUT</td>
       <td>/api/users/:id</td>
-      <td>update a user TODO : not added yet</td>
-      <td>TODO : the new object </td>
-      <td>urlParam id of type int</td>
+      <td>not added yet</td>
+      <td>returns the new the new object </td>
+      <td>- urlParam id of type int</br>
+      - send user token in the header like this</br>      
+      'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}
+      </td>
     </tr>
 
   </table>
@@ -160,8 +166,8 @@ Ask me for them
     <td>GET</td>
     <td>/api/growing_unit</td>
     <td>get all growing units</td>
-    <td>TODO - it is an array of growing units... refer to the response of GET a single frowing unit</td>
-    <td>send user token in the header</td>
+    <td>it is an array of growing units... </br>refer to the response of GET a single growing unit</td>
+    <td>- send user token in the header like this</br>'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}</td>
   </tr>
   <tr>
     <td>GET</td>
@@ -188,7 +194,10 @@ Ask me for them
     ],</br>
     "unit_id": "5f9bbd88c6647153ec25826a"</br>
     }</code></td>
-    <td>urlParam id of type int</td>
+    <td>- urlParam id of type int </br>
+    - send user token in the header like this
+    </br>'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}
+    </td>
   </tr>
 
   <tr>
@@ -223,12 +232,13 @@ Ask me for them
     <tr>
     <td>PUT</td>
     <td>/api/growing_unit/:id</td>
-    <td>update a growing unit TODO : not added yet</td>
-    <td>TODO : the new object - it will return the object with the applied updates</td>
+    <td>update a growing unit</td>
+    <td>it will return the object with the applied updates</td>
     <td>required- urlParam id of type int <br>
-      required- send user token in the header <br>
+      - send user token in the header like this
+      </br>'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}
       required-You also need to pass the updated growing unit as the request body. <br>
-      If the field to update is an array,please fill the array withthe old stuff and add the newer stuff so that the array you send to the backend represents the update you want. The only exception is adding a new image to the a growing unit; for that, I will make a url specifically for that
+      If the field to update is an array,please fill the array with the old stuff and add the newer stuff so that the array you send to the backend represents the update you want. The only exception is adding a new image to the a growing unit; for that, I will make a url specifically for that
     </td>
   </tr>
     
@@ -237,9 +247,10 @@ Ask me for them
     <td>/api/growing_unit/unitimage/:id</td>
     <td>add an image to a growing unit</td>
     <td>It will return the growing unit object updated with the new image in the images array</td>
-    <td>required- urlParam id of the growing unit you want to add the image to <br>
-      required- send user token in the header.<br>
-      required- image (obviously)
+    <td>- required- urlParam id of the growing unit you want to add the image to <br>
+      - send user token in the header like this
+      </br>'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}
+      - required- image (obviously)
     </td>
   </tr>
   <tr>
@@ -248,7 +259,8 @@ Ask me for them
     <td>delete an image from a growing unit</td>
     <td>It will return the growing unit object updated absent the deleted image in the images array</td>
     <td>required- urlParam id of the growing unit you want to add the image to <br>
-      required- send user token in the header.<br>
+      - send user token in the header like this
+      </br>'headers': { 'Authorization': 'bearer eyR3st0fT0k3n....'}
       required- filename {"fileName": "example123.jpg"}<br>
     </td>
   </tr>
@@ -256,6 +268,7 @@ Ask me for them
 </table>
 
 TODO:
+
 1. when registering, the username must be unique. So whilst the user types, you can make a request to api/register/is_name_free and I will send back a true or false (or smth else; I will figure it out later).
 
 2. When a user logs in they will get a token that they will need every time they make some request. It verifies
