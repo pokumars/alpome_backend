@@ -26,6 +26,7 @@ You will have to sign up to mongodb so i can add you to the project
 
 The passwords for everything is in a .env file. The server wont work until you have them.
 Ask me for them
+<h1  >API Documentation</h1>
 
 <h2  >Login</h2>
 <h3>/api/growing_unit</h3>
