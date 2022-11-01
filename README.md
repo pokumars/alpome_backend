@@ -4,6 +4,12 @@ This is the backend of alpome plant monitoring application. Part of an app done 
 Final product: https://alpome.herokuapp.com/ 
 
 Frontend can be found at https://github.com/AnnaA123/alpome_frontend
+
+### credentials to test the app
+name of the user-main 
+
+pass of the user- jonSnow
+
 ## Backend Code
 
 ### What is alpome
@@ -15,12 +21,6 @@ the plant or garden in order to track its progress over time. User can also make
 
  The original idea was for a Supragarden hydroponic unit. For that specific hydroponic unit, there is a special account. in that account, a user can see the current state of the unit due to some sensors placed in the hydroponic unit. that specific account has the data such as Temperature, TVOC, Electrical Conductivity, co2, pH, Humidity, Water Temperature and Light.
 Since that is a special account, I will give the credentials in order for you to login and expreience this specific unit
-
-name of the user-main
-pass of the user- jonSnow
-
-
-
 
 
 the controllers directory contains the logic for a set of endpoints
