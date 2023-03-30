@@ -1,14 +1,14 @@
 # ALPOME 
 This is the backend of alpome plant monitoring application. Part of an app done as part of an innovation course.
 
-Final product: https://alpome.herokuapp.com/ 
+Final product: https://alpome-backend.fly.dev/
 
 Frontend can be found at https://github.com/AnnaA123/alpome_frontend
 
 ### credentials to test the app
-name of the user-main 
+name of the user-testuser1 
 
-pass of the user- jonSnow
+pass of the user- testuser1
 
 ## Backend Code
 
